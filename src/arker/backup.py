@@ -28,8 +28,8 @@ def create_backup(store) -> dict:
         journals = store.data_dir / "journals"
         if journals.exists():
             for path in sorted(journals.rglob("*.json")):
-                if path.is_symlink():
-                    raise ValueError("Jurnal symlink tidak boleh masuk backup.")
+                if any(part.is_symlink() or part.is_junction() for part in (path, *path.parents)):
+                    raise ValueError("Jurnal symlink atau junction tidak boleh masuk backup.")
                 target = folder / path.relative_to(store.data_dir)
                 target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
                 shutil.copyfile(path, target)
@@ -97,7 +97,7 @@ def list_backups(store) -> list[dict]:
 def restore_backup(source: Path, target: Path) -> dict:
     manifest = verify_backup(source)
     target = Path(target).expanduser()
-    if target.exists() or target.is_symlink() or any(parent.is_symlink() for parent in target.absolute().parents):
+    if target.exists() or any(part.is_symlink() or part.is_junction() for part in (target, *target.absolute().parents)):
         raise ValueError("Restore memerlukan folder tujuan baru.")
     target.mkdir(parents=True, mode=0o700)
     for item in manifest["files"]:
@@ -114,8 +114,9 @@ def restore_backup(source: Path, target: Path) -> dict:
     previous = store.configuration()
     config = previous["config"]
     config["application"].update(mode="shadow", publish_enabled=False)
-    for section in ("reply", "reports", "cleanup", "telegram"):
+    for section in ("ai", "reply", "reports", "cleanup", "telegram"):
         config.get(section, {})["enabled"] = False
+    config.get("ai", {})["transcription_enabled"] = False
     config.get("ownership", {}).update(acknowledged=False, account_ids=[])
     config["storage"]["bank_directory"] = str(target.resolve() / "bank")
     config["drive"]["folder_url"] = ""

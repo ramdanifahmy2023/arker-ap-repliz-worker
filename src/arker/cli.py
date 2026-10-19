@@ -5,10 +5,12 @@ import asyncio
 from getpass import getpass
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import signal
 import sys
+import time
 import webbrowser
 
 from arker import __version__
@@ -70,6 +72,23 @@ async def run_worker(store: Store):
             signal.signal(signum, handler)
 
 
+async def serve_app(app, data_dir: Path, host: str, port: int):
+    import uvicorn
+    from arker.lifecycle import atomic_json
+    ready = data_dir / "control/api-ready.json"
+    ready.unlink(missing_ok=True)
+    server = uvicorn.Server(uvicorn.Config(app, host=host, port=port, access_log=False, server_header=False, proxy_headers=False))
+    task = asyncio.create_task(server.serve())
+    try:
+        while not server.started and not task.done():
+            await asyncio.sleep(.05)
+        if server.started:
+            atomic_json(ready, {"pid": os.getpid(), "host": host, "port": port, "started_at": time.time()})
+        await task
+    finally:
+        ready.unlink(missing_ok=True)
+
+
 def main(argv=None) -> int:
     args = parser().parse_args(argv)
     if hasattr(args, "port") and not 1024 <= args.port <= 65535:
@@ -126,11 +145,10 @@ def main(argv=None) -> int:
                 bootstrap_admin(store, email, password)
                 result = {"initialized": True, "mode": "shadow", "publish_enabled": False}
             elif args.action == "serve":
-                import uvicorn
                 from arker.api import create_app
                 from arker.locks import DataLock
                 with DataLock(data_dir, "api"):
-                    uvicorn.run(create_app(data_dir, web_dir=frontend_directory()), host=args.host, port=args.port, access_log=False, server_header=False, proxy_headers=False)
+                    asyncio.run(serve_app(create_app(data_dir, web_dir=frontend_directory()), data_dir, args.host, args.port))
                 return 0
             elif args.action == "worker":
                 asyncio.run(run_worker(store))

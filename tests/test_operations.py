@@ -9,9 +9,11 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 from arker.backup import create_backup, digest, restore_backup, verify_backup
 from arker.cleanup import apply_cleanup, cleanup_plan
+from arker.config import validate_config
 from arker.db import Store
 from arker.ingest import intake
 from arker.lifecycle import request_stop, start_detached, status, worker_action
@@ -23,7 +25,7 @@ from arker.worker import Worker
 
 class OperationsTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="arker test ")
+        self.temporary = tempfile.TemporaryDirectory(prefix="arker uji café ")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.store = Store(self.root / "private")
@@ -77,6 +79,47 @@ class OperationsTests(unittest.TestCase):
             db.execute("INSERT INTO attempts(id,operation,request_key,state,created_at,updated_at) VALUES ('missing','reply','missing','unknown',1,1)")
         with self.assertRaisesRegex(ValueError, "jurnal"):
             create_backup(self.store)
+
+    def test_restore_disables_ai_and_preserves_historical_configuration(self):
+        config = self.store.configuration()["config"]
+        config["ai"].update(enabled=True, model="fixture-model", transcription_enabled=True, whisper_model="fixture-model.bin")
+        config["credentials"]["ai"] = 1
+        original_version = self.store.save_configuration(config, 1)
+        bundle = create_backup(self.store)
+        target = self.root / "restored with AI"
+        restore_backup(self.store.data_dir / "backups" / bundle["id"], target)
+        restored = Store(target)
+        safe = restored.configuration()["config"]
+        self.assertFalse(safe["ai"]["enabled"])
+        self.assertFalse(safe["ai"]["transcription_enabled"])
+        self.assertEqual(safe["credentials"]["ai"], 0)
+        self.assertTrue(validate_config(safe, target)["valid"])
+        self.assertEqual(restored.config_at(original_version), config)
+
+    def test_cleanup_resolves_relative_and_home_bank_profiles(self):
+        identifier, work, archive = self.cleanup_fixture()
+        relative_bank = self.store.data_dir / "bank café"
+        archive.parent.rename(relative_bank)
+        archive = relative_bank / archive.name
+        config = self.store.configuration()["config"]
+        config["storage"]["bank_directory"] = "bank café"
+        version = self.store.save_configuration(config, 1)
+        with self.store.connect() as db:
+            db.execute("UPDATE assets SET config_version=? WHERE id=?", (version, identifier))
+            db.execute("UPDATE artifacts SET path=? WHERE asset_id=? AND kind='bank'", (str(archive), identifier))
+        self.assertEqual(len(cleanup_plan(self.store)["eligible"]), 1)
+        home_bank = self.root / "bank home café"
+        relative_bank.rename(home_bank)
+        config["storage"]["bank_directory"] = "~/bank home café"
+        home_version = self.store.save_configuration(config, version)
+        with self.store.connect() as db:
+            db.execute("UPDATE assets SET config_version=? WHERE id=?", (home_version, identifier))
+            db.execute("UPDATE artifacts SET path=? WHERE asset_id=? AND kind='bank'", (str(home_bank / archive.name), identifier))
+        def expand_test_home(path):
+            return self.root.joinpath(*path.parts[1:]) if path.parts[0] == "~" else path
+
+        with patch.object(Path, "expanduser", expand_test_home):
+            self.assertEqual(len(cleanup_plan(self.store)["eligible"]), 1)
 
     def cleanup_fixture(self):
         accepted = intake(self.store, ["https://www.instagram.com/reel/CleanupFixture123/"])

@@ -5,6 +5,7 @@ from pathlib import Path
 import time
 
 from arker.backup import digest
+from arker.config import bank_path
 from arker.locks import DataLock
 
 
@@ -14,7 +15,7 @@ def cleanup_plan(store, *, at: float | None = None) -> dict:
     cache = (store.data_dir / "work").resolve()
     with store.connect() as db:
         rows = db.execute("SELECT * FROM artifacts").fetchall()
-        bank_roots = [Path(json.loads(row[0])["storage"]["bank_directory"]).resolve() for row in db.execute("SELECT config FROM configurations")]
+        bank_roots = [bank_path(json.loads(row[0])["storage"]["bank_directory"], store.data_dir) for row in db.execute("SELECT config FROM configurations")]
         references = {}
         for row in rows:
             references.setdefault(str(Path(row["path"]).resolve()), set()).add(row["asset_id"])
@@ -24,7 +25,7 @@ def cleanup_plan(store, *, at: float | None = None) -> dict:
             if not resolved.is_relative_to(cache):
                 continue
             reason = None
-            if path.is_symlink() or any(parent.is_symlink() for parent in path.parents) or any(resolved == bank or resolved.is_relative_to(bank) for bank in bank_roots):
+            if any(part.is_symlink() or part.is_junction() for part in (path, *path.parents)) or any(resolved == bank or resolved.is_relative_to(bank) for bank in bank_roots):
                 reason = "File atau lokasi bank dilindungi."
             elif len(references[str(resolved)]) != 1:
                 reason = "File masih dirujuk aset lain."

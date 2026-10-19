@@ -38,7 +38,13 @@ def status(data_dir: Path) -> dict:
         except (ValueError, OSError):
             pass
     worker_running = is_locked(data_dir, "worker")
+    ready = {}
+    try:
+        ready = json.loads((data_dir / "control/api-ready.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        pass
     return {**value, "running": running, "worker_running": worker_running,
+            "api_ready": bool(ready.get("pid") and ready.get("pid") == value.get("api_pid") and is_locked(data_dir, "api")),
             "worker_state": value.get("worker_state", "running") if worker_running else "stopped"}
 
 
@@ -61,21 +67,33 @@ def command(data_dir: Path, action: str, *args) -> list[str]:
 
 def start_detached(data_dir: Path, host: str, port: int) -> dict:
     if is_locked(data_dir, "supervisor"):
-        return status(data_dir)
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
+            state = status(data_dir)
+            if state["running"] and state["api_ready"]:
+                return state
+            if not state["running"]:
+                break
+            time.sleep(.1)
+        raise RuntimeError("Supervisor yang ada belum mempunyai API siap; periksa status dan log lokal.")
     folder = data_dir / "logs"
     folder.mkdir(parents=True, exist_ok=True, mode=0o700)
     options = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS} if os.name == "nt" else {"start_new_session": True}
     with (folder / "supervisor.log").open("ab") as log:
         child = subprocess.Popen(command(data_dir, "run", "--host", host, "--port", str(port)), stdin=subprocess.DEVNULL, stdout=log, stderr=log, **options)
         _detached_processes[str(data_dir)] = child
-    deadline = time.monotonic() + 10
+    deadline = time.monotonic() + 20
     while time.monotonic() < deadline:
-        if is_locked(data_dir, "supervisor"):
-            return status(data_dir)
         if child.poll() is not None:
             _detached_processes.pop(str(data_dir), None)
             raise RuntimeError("Supervisor gagal dimulai; periksa log lokal.")
+        state = status(data_dir)
+        if state.get("pid") == child.pid and state["running"] and state["api_ready"]:
+            return state
         time.sleep(.1)
+    state = status(data_dir)
+    if state.get("pid") == child.pid and state["running"]:
+        request_stop(data_dir)
     raise RuntimeError("Supervisor belum siap; periksa log lokal.")
 
 
