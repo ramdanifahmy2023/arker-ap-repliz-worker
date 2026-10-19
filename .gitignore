@@ -1,0 +1,27 @@
+# Local data and credentials never belong in the public repository.
+Credential/
+credentials/
+runtime/
+data/
+bank-content/
+backups/
+.env
+.env.*
+!.env.example
+*.local.*
+*.sqlite*
+*.db
+*.log
+*.pem
+*.key
+*.mp4
+*.mov
+*.webm
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.DS_Store
+.artifacts/
+Thumbs.db

@@ -1,0 +1,24 @@
+{
+  "status": "planned",
+  "timezone": "Asia/Jakarta",
+  "missing_data": "null_with_reason",
+  "metrics": [
+    {"id": "intake", "unit": "asset", "kind": "time_series", "source": "accepted_asset_events"},
+    {"id": "published", "unit": "delivery", "kind": "time_series", "source": "verified_publication_events"},
+    {"id": "stage_backlog", "unit": "asset", "kind": "bar", "source": "asset_stage_snapshot"},
+    {"id": "stage_duration", "unit": "milliseconds", "kind": "percentile_bar", "source": "completed_stage_samples"},
+    {"id": "queue_age", "unit": "seconds", "kind": "histogram", "source": "unfinished_work_snapshot"},
+    {"id": "account_quota", "unit": "slot", "kind": "segmented_bar", "source": "complete_quota_snapshot"},
+    {"id": "storage", "unit": "byte", "kind": "capacity_bar", "source": "worker_volume_probe"},
+    {"id": "ai_usage", "unit": "token", "kind": "bar", "source": "provider_reported_usage"},
+    {"id": "followers", "unit": "follower", "kind": "line", "source": "dated_account_snapshots"}
+  ],
+  "progress": {
+    "batch": "complete_assets_over_accepted_assets",
+    "asset": "verified_stage_checkpoints",
+    "measurable_stage": "reported_completed_over_reported_total",
+    "unmeasurable_stage": "stage_label_and_elapsed_time",
+    "delivery": "verified_destinations_over_required_destinations",
+    "clock_generated_percent": false
+  }
+}

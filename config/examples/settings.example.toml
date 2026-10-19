@@ -1,0 +1,33 @@
+# Spesifikasi contoh; belum dibaca aplikasi. Semua path relatif terhadap data directory privat.
+[application]
+name = "Arker"
+mode = "shadow"
+publish_enabled = false
+timezone = "Asia/Jakarta"
+
+[appearance]
+theme = "system"
+motion = "system"
+
+[repliz]
+credential_ref = "repliz-default"
+
+[storage]
+profile = "bank-default"
+bank_directory = "bank-content"
+sync_adapter = "external"
+
+[drive]
+folder_url = ""
+require_full_checksum = true
+
+[workflow]
+daily_video_limit = 20
+
+[reply]
+enabled = false
+daily_limit = 20
+
+[cleanup]
+enabled = false
+retention_hours = 24

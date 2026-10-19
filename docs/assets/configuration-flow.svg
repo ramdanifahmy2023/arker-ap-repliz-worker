@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="660" viewBox="0 0 1440 660" role="img" aria-labelledby="title description">
+<title id="title">Alur konfigurasi Arker yang direncanakan</title><desc id="description">Repliz, bank konten dan folder Drive divalidasi sebelum apply. Worker harus mengonfirmasi versi sebelum panel menyatakan aktif.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums}</style>
+<rect x="0" y="0" width="1440" height="660" rx="18" fill="#0C1422" stroke="none"/>
+<text x="48" y="55" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">ARKER / KONFIGURASI</text>
+<text x="48" y="103" font-size="32" fill="#EDF4FC" font-weight="700" text-anchor="start">Tersimpan belum berarti sudah dipakai worker.</text>
+<text x="48" y="137" font-size="18" fill="#A9BBD1" font-weight="400" text-anchor="start">Setiap perubahan punya pemeriksaan, dampak yang jelas, dan konfirmasi.</text>
+<rect x="48" y="192" width="230" height="150" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="66" y="225" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">01</text>
+<text x="66" y="269" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Isi perubahan</text>
+<text x="66" y="306" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Repliz / bank / Drive</text>
+<line x1="288" y1="268" x2="314" y2="268" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 307 263 L 314 268 L 307 273" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="326" y="192" width="230" height="150" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="344" y="225" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">02</text>
+<text x="344" y="269" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Periksa</text>
+<text x="344" y="306" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Koneksi, izin, file</text>
+<line x1="566" y1="268" x2="592" y2="268" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 585 263 L 592 268 L 585 273" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="604" y="192" width="230" height="150" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="622" y="225" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">03</text>
+<text x="622" y="269" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Tinjau dampak</text>
+<text x="622" y="306" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Job baru atau restart</text>
+<line x1="844" y1="268" x2="870" y2="268" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 863 263 L 870 268 L 863 273" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="882" y="192" width="230" height="150" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="900" y="225" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">04</text>
+<text x="900" y="269" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Terapkan</text>
+<text x="900" y="306" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Kirim versi ke worker</text>
+<line x1="1122" y1="268" x2="1148" y2="268" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 1141 263 L 1148 268 L 1141 273" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1160" y="192" width="230" height="150" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="1178" y="225" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">05</text>
+<text x="1178" y="269" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Aktif</text>
+<text x="1178" y="306" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Worker mengonfirmasi</text>
+<rect x="48" y="384" width="428" height="208" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="68" y="419" font-size="12" fill="#64E4BC" font-weight="700" text-anchor="start">REPLIZ</text>
+<text x="68" y="455" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Kredensial tetap privat</text>
+<text x="68" y="492" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Tes hanya-baca sebelum apply.</text>
+<text x="68" y="521" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Nilai lama tidak dikirim ke browser.</text>
+<text x="68" y="550" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Kegagalan tidak mereset kuota.</text>
+<rect x="506" y="384" width="428" height="208" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="526" y="419" font-size="12" fill="#8BBDFF" font-weight="700" text-anchor="start">BANK KONTEN</text>
+<text x="526" y="455" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Pilih folder mesin worker</text>
+<text x="526" y="492" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Periksa volume, izin, dan ruang.</text>
+<text x="526" y="521" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Aset lama menjaga referensinya.</text>
+<text x="526" y="550" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Tidak memindah file otomatis.</text>
+<rect x="964" y="384" width="428" height="208" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="984" y="419" font-size="12" fill="#FFD080" font-weight="700" text-anchor="start">GOOGLE DRIVE</text>
+<text x="984" y="455" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Buktikan pasangan file</text>
+<text x="984" y="492" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Baca folder ID dari link yang valid.</text>
+<text x="984" y="521" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Cocokkan ukuran dan checksum.</text>
+<text x="984" y="550" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Satu penulis sinkronisasi.</text>
+<text x="48" y="634" font-size="13" fill="#A9BBD1" font-weight="400" text-anchor="start">RENCANA FITUR  ·  Belum ada form aktif, kredensial tersimpan, atau perubahan pada worker produksi.</text>
+</svg>

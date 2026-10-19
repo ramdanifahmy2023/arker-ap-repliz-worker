@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="770" viewBox="0 0 1440 770" role="img" aria-labelledby="title description">
+<title id="title">Arsitektur Arker yang direncanakan</title><desc id="description">Web, API kontrol dan worker dipisahkan. Provider berada di belakang adapter. Data privat tidak berada di repo publik.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums}</style>
+<rect x="0" y="0" width="1440" height="770" rx="18" fill="#0C1422" stroke="none"/>
+<text x="48" y="56" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">ARKER / ARSITEKTUR</text>
+<text x="48" y="103" font-size="34" fill="#EDF4FC" font-weight="700" text-anchor="start">Satu pusat kendali. Eksekusi tetap terjaga.</text>
+<text x="48" y="135" font-size="18" fill="#A9BBD1" font-weight="400" text-anchor="start">Rancangan terpisah dari instalasi worker yang sudah berjalan.</text>
+<rect x="1170" y="42" width="226" height="30" rx="6" fill="#21364A" stroke="none"/>
+<text x="1182" y="62" font-size="12" fill="#FFD080" font-weight="700" text-anchor="start">RENCANA · BELUM AKTIF</text>
+<rect x="48" y="196" width="300" height="230" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="72" y="235" font-size="14" fill="#8BBDFF" font-weight="700" text-anchor="start">01</text>
+<text x="72" y="276" font-size="26" fill="#EDF4FC" font-weight="700" text-anchor="start">Web app</text>
+<text x="72" y="318" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Dashboard &amp; 22 menu</text>
+<text x="72" y="347" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Chart + progress</text>
+<text x="72" y="376" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Form konfigurasi</text>
+<rect x="396" y="196" width="300" height="230" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="420" y="235" font-size="14" fill="#64E4BC" font-weight="700" text-anchor="start">02</text>
+<text x="420" y="276" font-size="26" fill="#EDF4FC" font-weight="700" text-anchor="start">Control API</text>
+<text x="420" y="318" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Login &amp; validasi</text>
+<text x="420" y="347" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Config version</text>
+<text x="420" y="376" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Perintah durable</text>
+<rect x="744" y="196" width="300" height="230" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="768" y="235" font-size="14" fill="#64E4BC" font-weight="700" text-anchor="start">03</text>
+<text x="768" y="276" font-size="26" fill="#EDF4FC" font-weight="700" text-anchor="start">Worker</text>
+<text x="768" y="318" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Antrean &amp; ownership</text>
+<text x="768" y="347" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Jurnal &amp; rekonsiliasi</text>
+<text x="768" y="376" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Telemetry tahap</text>
+<rect x="1092" y="196" width="300" height="230" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="1116" y="235" font-size="14" fill="#8BBDFF" font-weight="700" text-anchor="start">04</text>
+<text x="1116" y="276" font-size="26" fill="#EDF4FC" font-weight="700" text-anchor="start">Adapter</text>
+<text x="1116" y="318" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Repliz / AI / media</text>
+<text x="1116" y="347" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Drive / Telegram</text>
+<text x="1116" y="376" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Service manager OS</text>
+<line x1="356" y1="306" x2="387" y2="306" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 380 301 L 387 306 L 380 311" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="704" y1="306" x2="735" y2="306" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 728 301 L 735 306 L 728 311" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="1052" y1="306" x2="1083" y2="306" stroke="#64E4BC" stroke-width="2"/>
+<path d="M 1076 301 L 1083 306 L 1076 311" fill="none" stroke="#64E4BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 894 426 L 894 462 L 198 462 L 198 426" fill="none" stroke="#8BBDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="548" y="487" font-size="15" fill="#8BBDFF" font-weight="400" text-anchor="middle">Status, hasil, event, dan konfirmasi konfigurasi</text>
+<rect x="48" y="526" width="630" height="170" rx="12" fill="#152D2E" stroke="#3D6B61"/>
+<text x="72" y="562" font-size="13" fill="#64E4BC" font-weight="700" text-anchor="start">DATA PRIVAT / DI LUAR GIT</text>
+<text x="72" y="602" font-size="22" fill="#EDF4FC" font-weight="600" text-anchor="start">Credential · database · jurnal · bank konten</text>
+<text x="72" y="638" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Browser hanya menerima status dan referensi yang diizinkan.</text>
+<text x="72" y="668" font-size="15" fill="#A9BBD1" font-weight="400" text-anchor="start">Default shadow. Tidak ada publikasi otomatis dari instalasi baru.</text>
+<rect x="706" y="526" width="686" height="170" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="730" y="562" font-size="13" fill="#8BBDFF" font-weight="700" text-anchor="start">TARGET LINTAS PLATFORM</text>
+<text x="730" y="602" font-size="25" fill="#EDF4FC" font-weight="600" text-anchor="start">Windows  /  macOS  /  Linux</text>
+<text x="730" y="638" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Path, service, permission dan sinkronisasi melalui adapter.</text>
+<text x="730" y="668" font-size="15" fill="#A9BBD1" font-weight="400" text-anchor="start">Dukungan runtime dibuktikan per OS sebelum rilis.</text>
+<text x="48" y="740" font-size="13" fill="#A9BBD1" font-weight="400" text-anchor="start">REPO PUBLIK: source dan spesifikasi  ·  OPERASI: data privat dan satu pemilik pengiriman</text>
+</svg>

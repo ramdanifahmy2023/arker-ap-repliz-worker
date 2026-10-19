@@ -1,0 +1,39 @@
+{
+  "status": "planned",
+  "groups": [
+    {"id": "monitoring", "label": "Pemantauan", "items": [
+      {"id": "overview", "label": "Ringkasan", "route": "/overview"},
+      {"id": "flow", "label": "Peta alur", "route": "/flow"},
+      {"id": "workers", "label": "Kendali worker", "route": "/workers"},
+      {"id": "attention", "label": "Perlu perhatian", "route": "/attention"}
+    ]},
+    {"id": "content", "label": "Konten", "items": [
+      {"id": "intake", "label": "Tambah konten", "route": "/content/new"},
+      {"id": "batches", "label": "Batch & antrean", "route": "/batches"},
+      {"id": "library", "label": "Bank konten", "route": "/library"},
+      {"id": "preview", "label": "Detail & preview", "route": "/preview"}
+    ]},
+    {"id": "publishing", "label": "Akun & publikasi", "items": [
+      {"id": "accounts", "label": "Akun sosial", "route": "/accounts"},
+      {"id": "rotation", "label": "Rotasi & kuota", "route": "/rotation"},
+      {"id": "calendar", "label": "Kalender posting", "route": "/calendar"},
+      {"id": "publications", "label": "Hasil publikasi", "route": "/publications"}
+    ]},
+    {"id": "intelligence", "label": "Video, AI & interaksi", "items": [
+      {"id": "processing", "label": "Pengolahan video & AI", "route": "/processing"},
+      {"id": "personas", "label": "Persona & caption", "route": "/personas"},
+      {"id": "comments", "label": "Komentar & balasan", "route": "/comments"},
+      {"id": "reports", "label": "Laporan & statistik", "route": "/reports"}
+    ]},
+    {"id": "connections", "label": "Koneksi & penyimpanan", "items": [
+      {"id": "integrations", "label": "Koneksi layanan", "route": "/integrations"},
+      {"id": "telegram", "label": "Telegram & notifikasi", "route": "/telegram"},
+      {"id": "storage", "label": "Penyimpanan & cleanup", "route": "/storage"}
+    ]},
+    {"id": "administration", "label": "Administrasi", "items": [
+      {"id": "backups", "label": "Backup & pemulihan", "route": "/backups"},
+      {"id": "activity", "label": "Riwayat aktivitas", "route": "/activity"},
+      {"id": "settings", "label": "Pengaturan & akses", "route": "/settings"}
+    ]}
+  ]
+}

@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1030" viewBox="0 0 1440 1030" role="img" aria-labelledby="title description">
+<title id="title">Arker — konsep dashboard, data simulasi</title><desc id="description">Konsep statis dashboard dengan tren publikasi, antrean per tahap, progress render, serta tiga jalur delivery. Tidak terhubung ke worker.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums}</style>
+<rect x="0" y="0" width="1440" height="1030" rx="18" fill="#0C1422" stroke="none"/>
+<rect x="0" y="0" width="230" height="1030" rx="18" fill="#0A101B" stroke="none"/>
+<text x="30" y="58" font-size="29" fill="#EDF4FC" font-weight="700" text-anchor="start">ARKER</text>
+<text x="30" y="84" font-size="11" fill="#A9BBD1" font-weight="700" text-anchor="start">REPLIZ WORKER</text>
+<line x1="28" y1="108" x2="202" y2="108" stroke="#34465E" stroke-width="2"/>
+<text x="30" y="146" font-size="11" fill="#A9BBD1" font-weight="700" text-anchor="start">PEMANTAUAN</text>
+<rect x="18" y="164" width="194" height="38" rx="7" fill="#203D40" stroke="none"/>
+<rect x="18" y="172" width="3" height="22" rx="1" fill="#64E4BC" stroke="none"/>
+<circle cx="38" cy="183" r="3" fill="#64E4BC"/>
+<text x="54" y="189" font-size="14" fill="#64E4BC" font-weight="600" text-anchor="start">Ringkasan</text>
+<circle cx="38" cy="229" r="3" fill="#A9BBD1"/>
+<text x="54" y="235" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Peta alur</text>
+<circle cx="38" cy="275" r="3" fill="#A9BBD1"/>
+<text x="54" y="281" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Kendali worker</text>
+<circle cx="38" cy="321" r="3" fill="#A9BBD1"/>
+<text x="54" y="327" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Perlu perhatian</text>
+<text x="30" y="398" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="start">Konten</text>
+<text x="200" y="398" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="end">4</text>
+<line x1="30" y1="418" x2="200" y2="418" stroke="#1D2C40" stroke-width="1"/>
+<text x="30" y="458" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="start">Akun &amp; publikasi</text>
+<text x="200" y="458" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="end">4</text>
+<line x1="30" y1="478" x2="200" y2="478" stroke="#1D2C40" stroke-width="1"/>
+<text x="30" y="518" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="start">Video, AI &amp; interaksi</text>
+<text x="200" y="518" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="end">4</text>
+<line x1="30" y1="538" x2="200" y2="538" stroke="#1D2C40" stroke-width="1"/>
+<text x="30" y="578" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="start">Koneksi &amp; storage</text>
+<text x="200" y="578" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="end">3</text>
+<line x1="30" y1="598" x2="200" y2="598" stroke="#1D2C40" stroke-width="1"/>
+<text x="30" y="638" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="start">Administrasi</text>
+<text x="200" y="638" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="end">3</text>
+<line x1="30" y1="658" x2="200" y2="658" stroke="#1D2C40" stroke-width="1"/>
+<rect x="20" y="874" width="190" height="122" rx="10" fill="#18273A" stroke="none"/>
+<rect x="34" y="889" width="160" height="30" rx="6" fill="#21364A" stroke="none"/>
+<text x="46" y="909" font-size="12" fill="#FFD080" font-weight="700" text-anchor="start">KONSEP DESAIN</text>
+<text x="34" y="944" font-size="16" fill="#EDF4FC" font-weight="600" text-anchor="start">Data simulasi</text>
+<text x="34" y="970" font-size="13" fill="#A9BBD1" font-weight="400" text-anchor="start">Belum terhubung</text>
+<text x="266" y="48" font-size="12" fill="#A9BBD1" font-weight="700" text-anchor="start">OPERASI / RINGKASAN</text>
+<text x="266" y="91" font-size="34" fill="#EDF4FC" font-weight="700" text-anchor="start">Ruang kendali</text>
+<text x="266" y="121" font-size="16" fill="#A9BBD1" font-weight="400" text-anchor="start">Baca progres. Temukan hambatan. Atur pekerjaan berikutnya.</text>
+<rect x="1148" y="38" width="250" height="30" rx="6" fill="#21364A" stroke="none"/>
+<text x="1160" y="58" font-size="12" fill="#FFD080" font-weight="700" text-anchor="start">SIMULASI · BUKAN LIVE</text>
+<text x="1396" y="104" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="end">7 hari contoh  /  WIB</text>
+<rect x="266" y="153" width="266" height="130" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="286" y="182" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Aset diterima</text>
+<text x="286" y="231" font-size="39" fill="#8BBDFF" font-weight="700" text-anchor="start">120</text>
+<text x="286" y="258" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="start">sumber · periode contoh</text>
+<rect x="554" y="153" width="266" height="130" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="574" y="182" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Sudah tayang</text>
+<text x="574" y="231" font-size="39" fill="#64E4BC" font-weight="700" text-anchor="start">264</text>
+<text x="574" y="258" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="start">delivery terverifikasi</text>
+<rect x="842" y="153" width="266" height="130" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="862" y="182" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Terjadwal</text>
+<text x="862" y="231" font-size="39" fill="#8BBDFF" font-weight="700" text-anchor="start">48</text>
+<text x="862" y="258" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="start">delivery · belum tayang</text>
+<rect x="1130" y="153" width="266" height="130" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="1150" y="182" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Perlu perhatian</text>
+<text x="1150" y="231" font-size="39" fill="#FFD080" font-weight="700" text-anchor="start">24</text>
+<text x="1150" y="258" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="start">delivery · lihat penyebab</text>
+<rect x="266" y="305" width="664" height="318" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="288" y="339" font-size="20" fill="#EDF4FC" font-weight="600" text-anchor="start">Publikasi terverifikasi</text>
+<text x="288" y="364" font-size="13" fill="#A9BBD1" font-weight="400" text-anchor="start">Delivery per hari · total 264 · data simulasi</text>
+<line x1="334" y1="399" x2="904" y2="399" stroke="#2B3A50" stroke-width="1"/>
+<text x="316" y="403" font-size="11" fill="#A9BBD1" font-weight="400" text-anchor="end">60</text>
+<line x1="334" y1="454" x2="904" y2="454" stroke="#2B3A50" stroke-width="1"/>
+<text x="316" y="458" font-size="11" fill="#A9BBD1" font-weight="400" text-anchor="end">40</text>
+<line x1="334" y1="509" x2="904" y2="509" stroke="#2B3A50" stroke-width="1"/>
+<text x="316" y="513" font-size="11" fill="#A9BBD1" font-weight="400" text-anchor="end">20</text>
+<line x1="334" y1="564" x2="904" y2="564" stroke="#2B3A50" stroke-width="1"/>
+<text x="316" y="568" font-size="11" fill="#A9BBD1" font-weight="400" text-anchor="end">0</text>
+<rect x="352" y="500.4" width="42" height="63.599999999999994" rx="4" fill="#428D80" stroke="none"/>
+<text x="373" y="490.4" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">24</text>
+<text x="373" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Sen</text>
+<rect x="432" y="481.85" width="42" height="82.14999999999999" rx="4" fill="#428D80" stroke="none"/>
+<text x="453" y="471.85" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">31</text>
+<text x="453" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Sel</text>
+<rect x="512" y="492.45" width="42" height="71.55" rx="4" fill="#428D80" stroke="none"/>
+<text x="533" y="482.45" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">27</text>
+<text x="533" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Rab</text>
+<rect x="592" y="452.7" width="42" height="111.3" rx="4" fill="#428D80" stroke="none"/>
+<text x="613" y="442.7" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">42</text>
+<text x="613" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Kam</text>
+<rect x="672" y="468.6" width="42" height="95.39999999999999" rx="4" fill="#428D80" stroke="none"/>
+<text x="693" y="458.6" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">36</text>
+<text x="693" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Jum</text>
+<rect x="752" y="436.8" width="42" height="127.19999999999999" rx="4" fill="#428D80" stroke="none"/>
+<text x="773" y="426.8" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">48</text>
+<text x="773" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Sab</text>
+<rect x="832" y="415.6" width="42" height="148.4" rx="4" fill="#64E4BC" stroke="none"/>
+<text x="853" y="405.6" font-size="12" fill="#EDF4FC" font-weight="600" text-anchor="middle">56</text>
+<text x="853" y="588" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="middle">Min</text>
+<rect x="952" y="305" width="444" height="318" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="974" y="339" font-size="20" fill="#EDF4FC" font-weight="600" text-anchor="start">Antrean per tahap</text>
+<text x="974" y="364" font-size="13" fill="#A9BBD1" font-weight="400" text-anchor="start">Jumlah aset menunggu · snapshot simulasi</text>
+<text x="974" y="410" font-size="14" fill="#EDF4FC" font-weight="400" text-anchor="start">Unduh</text>
+<rect x="1058" y="397" width="268" height="15" rx="4" fill="#26364D" stroke="none"/>
+<rect x="1058" y="397" width="144" height="15" rx="4" fill="#8BBDFF" stroke="none"/>
+<text x="1370" y="411" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="end">6</text>
+<text x="974" y="450" font-size="14" fill="#EDF4FC" font-weight="400" text-anchor="start">Analisis</text>
+<rect x="1058" y="437" width="268" height="15" rx="4" fill="#26364D" stroke="none"/>
+<rect x="1058" y="437" width="96" height="15" rx="4" fill="#8BBDFF" stroke="none"/>
+<text x="1370" y="451" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="end">4</text>
+<text x="974" y="490" font-size="14" fill="#EDF4FC" font-weight="400" text-anchor="start">Render</text>
+<rect x="1058" y="477" width="268" height="15" rx="4" fill="#26364D" stroke="none"/>
+<rect x="1058" y="477" width="192" height="15" rx="4" fill="#FFD080" stroke="none"/>
+<text x="1370" y="491" font-size="14" fill="#FFD080" font-weight="600" text-anchor="end">8</text>
+<text x="974" y="530" font-size="14" fill="#EDF4FC" font-weight="400" text-anchor="start">Drive</text>
+<rect x="1058" y="517" width="268" height="15" rx="4" fill="#26364D" stroke="none"/>
+<rect x="1058" y="517" width="48" height="15" rx="4" fill="#8BBDFF" stroke="none"/>
+<text x="1370" y="531" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="end">2</text>
+<text x="974" y="570" font-size="14" fill="#EDF4FC" font-weight="400" text-anchor="start">Jadwal</text>
+<rect x="1058" y="557" width="268" height="15" rx="4" fill="#26364D" stroke="none"/>
+<rect x="1058" y="557" width="240" height="15" rx="4" fill="#8BBDFF" stroke="none"/>
+<text x="1370" y="571" font-size="14" fill="#EDF4FC" font-weight="600" text-anchor="end">10</text>
+<rect x="266" y="646" width="1130" height="170" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="288" y="678" font-size="20" fill="#EDF4FC" font-weight="600" text-anchor="start">Proses aktif</text>
+<rect x="1150" y="660" width="224" height="30" rx="6" fill="#21364A" stroke="none"/>
+<text x="1162" y="680" font-size="12" fill="#8BBDFF" font-weight="700" text-anchor="start">CONTOH TELEMETRY</text>
+<text x="288" y="716" font-size="12" fill="#A9BBD1" font-weight="700" text-anchor="start">ASET DEMO-17</text>
+<text x="448" y="716" font-size="16" fill="#EDF4FC" font-weight="600" text-anchor="start">Render video</text>
+<text x="1368" y="716" font-size="22" fill="#64E4BC" font-weight="700" text-anchor="end">63%</text>
+<rect x="288" y="738" width="1084" height="12" rx="6" fill="#293C52" stroke="none"/>
+<rect x="288" y="738" width="683" height="12" rx="6" fill="#64E4BC" stroke="none"/>
+<text x="288" y="784" font-size="13" fill="#A9BBD1" font-weight="400" text-anchor="start">Persen dari proses terukur. Angka tidak naik sendiri saat data berhenti.</text>
+<rect x="266" y="838" width="1130" height="151" rx="12" fill="#152235" stroke="#34465E"/>
+<text x="288" y="871" font-size="12" fill="#A9BBD1" font-weight="700" text-anchor="start">ASET DEMO-12</text>
+<text x="448" y="871" font-size="16" fill="#EDF4FC" font-weight="600" text-anchor="start">Drive terverifikasi · tiga tujuan, tiga status</text>
+<line x1="288" y1="893" x2="618" y2="893" stroke="#64E4BC" stroke-width="3"/>
+<text x="288" y="921" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">TikTok</text>
+<text x="288" y="950" font-size="18" fill="#64E4BC" font-weight="600" text-anchor="start">Sudah tayang</text>
+<line x1="650" y1="893" x2="980" y2="893" stroke="#8BBDFF" stroke-width="3"/>
+<text x="650" y="921" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">Facebook</text>
+<text x="650" y="950" font-size="18" fill="#8BBDFF" font-weight="600" text-anchor="start">Terjadwal</text>
+<line x1="1012" y1="893" x2="1342" y2="893" stroke="#FFD080" stroke-width="3"/>
+<text x="1012" y="921" font-size="14" fill="#A9BBD1" font-weight="400" text-anchor="start">YouTube</text>
+<text x="1012" y="950" font-size="18" fill="#FFD080" font-weight="600" text-anchor="start">Hasil belum pasti</text>
+<text x="266" y="1014" font-size="12" fill="#A9BBD1" font-weight="400" text-anchor="start">KONSEP STATIS  ·  Animasi, koneksi, dan kontrol akan dibangun setelah kontrak data disepakati.</text>
+</svg>
