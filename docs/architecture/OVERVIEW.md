@@ -1,6 +1,6 @@
-# Arsitektur yang direncanakan
+# Arsitektur Arker
 
-Status: rancangan, bukan layanan yang sudah tersedia.
+API, worker, frontend, dan adapter tersedia pada repo. Bukti pengujian dan batas aktivasi mengikuti [penerimaan](../ACCEPTANCE.md).
 
 ## Komponen
 
@@ -37,4 +37,4 @@ Tidak ada dependency absolut ke komputer pengembang, script bash-only untuk life
 
 ## Ownership
 
-Instalasi diberi instance ID dan scope akun. Mode awal shadow. Live memerlukan bukti bahwa tidak ada instalasi lain yang mengirim/reply untuk scope yang sama; bisa melalui akun khusus atau cutover yang mencatat pemindahan ownership. Membuat repo baru tidak memberikan hak kirim baru. Mekanisme koordinasi antarinstalasi menjadi syarat desain sebelum live.
+Instalasi diberi instance ID dan scope akun. Mode awal shadow. Live memerlukan bukti bahwa tidak ada instalasi lain yang mengirim/reply untuk scope yang sama; bisa melalui akun khusus atau cutover yang mencatat pemindahan ownership. Membuat repo baru tidak memberikan hak kirim baru. Mekanisme koordinasi antarinstalasi tidak otomatis; scope eksklusif atau cutover yang diverifikasi tetap diperlukan sebelum live.

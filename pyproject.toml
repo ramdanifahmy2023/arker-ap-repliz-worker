@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arker-repliz-worker"
+version = "0.1.0"
+description = "Arker social content worker and authenticated control dashboard"
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+  "fastapi==0.146.0", "uvicorn==0.54.0", "httpx==0.28.1",
+  "cryptography==50.0.2", "Pillow==13.0.0", "yt-dlp==2026.8.19",
+  "tzdata==2026.2",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1"]
+desktop = ["pywebview==6.2.1"]
+
+[project.scripts]
+arker = "arker.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+arker = ["assets/fonts/*", "web/**/*", "web/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

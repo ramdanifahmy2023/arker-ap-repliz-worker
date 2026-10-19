@@ -19,3 +19,19 @@ Catatan penutupan ini mengikuti commit/push tersendiri; SHA, run CI dan hasil re
 Batas bukti: diagram adalah konsep dengan data simulasi; bukan aplikasi berjalan. CI dokumen/validator bukan bukti runtime tiga OS. Isi peta eksternal belum dibaca karena akses 403. Metode login, domain remote, framework final, lisensi dan adapter Linux masih keputusan lanjutan.
 
 Pembersihan: folder proyek baru adalah hasil yang diminta dan dipertahankan. Artefak pemeriksaan lokal masuk .artifacts yang diabaikan Git. Tidak ada file produksi atau worktree lama yang dihapus.
+
+## 19 Oktober 2026: implementasi aplikasi dan pengujian tanpa publikasi
+
+Permintaan: implementasikan seluruh panel dan worker pada proyek terpisah, uji hingga lulus, lalu gabungkan dan push ke main. Klarifikasi pengguna menetapkan pengujian tanpa publikasi terlebih dahulu. Tidak menggunakan credential, DB, media, service, atau source privat instalasi lain.
+
+Base: `6805a26d354bfe84bdd399859d52c206e044efbc` pada origin/main. Branch `work/20261019-full-implementation`, worktree privat `.worktrees/20261019-full-implementation`. Backend, frontend, dan worker dikerjakan paralel oleh subagent dengan pembagian file; integrasi, lifecycle, backup/cleanup, packaging, CI, dan review dilakukan pada worktree yang sama.
+
+Perubahan: package `src/arker`, React/TypeScript di `apps/web`, CLI, sesi admin/CSRF, credential terenkripsi, konfigurasi immutable dan apply/ack, intake/dedup, journal/recovery, scheduler/kuota, adapter Repliz/Drive/AI/Telegram/media, persona, laporan, supervisor, service definitions, backup/restore, serta cleanup berbasis bukti. Font Barlow berasal dari Google Fonts publik dan dibundel bersama OFL. README berisi screenshot aplikasi dengan label fixture, diagram alur, menu, dan panduan operasi. Dependency/runtime lock, harness browser, wheel builder, dan CI tiga OS ditambahkan.
+
+Perbaikan hasil review: snapshot parsial mempertahankan pool, credential gagal tidak mengganti versi aktif, request ambigu tidak diulang, restore ditahan, API tetap hidup ketika worker stop, status config mengikuti acknowledgment, chart memisahkan aset/delivery, input URL/path/executable diperketat, credential menolak symlink/junction, body API dibatasi saat dibaca, frame rate diterapkan sebelum hook, dan progress memakai waktu encoder sebenarnya.
+
+Pemeriksaan lokal: validator publikasi nol temuan; suite API/core/worker/adapter/operations; 36 tes frontend, format dan build; 33 pemeriksaan browser dengan 1.000 aset fixture; lima pemeriksaan lifecycle melalui UI; axe nol pelanggaran pada enam tampilan. Preview FFmpeg nyata dan worker lokal membuktikan 15 pemeriksaan, termasuk orientasi, zoom, hook sebelum/pada detik 3, H.264/AAC, korelasi audio, progress, enam frame, bank, source credit, dan tiga delivery shadow. Packaging wheel memuat UI/API/worker/font tanpa DB atau credential. Verifier dan browser wrapper dapat dijalankan ulang.
+
+Batas bukti: provider memakai transport fixture. Tidak ada publikasi sosial, balasan, pesan Telegram, atau akses credential produksi. Transkripsi model nyata, token/Drive sync operator, native service registration, akses HTTPS publik, desktop signing, dan cutover belum diuji. SQLite/session fixture dan screenshot yang memuat path lokal tetap privat. CI/upload hanya menerima laporan tes, evidence sintetis, dan wheel.
+
+Integrasi Git: commit/push branch dilakukan setelah PASS lokal; main hanya digabung fast-forward setelah CI pada SHA branch lulus. CI main dan SHA remote diperiksa lagi. Hash akhir, run ID, dan manifest pembersihan disimpan pada `.artifacts/` privat agar tidak membuat commit hanya untuk mencatat hash dirinya sendiri. Worktree baru dihapus tanpa force setelah seluruh layanan fixture berhenti, bukti diarsipkan, serta merge/push/CI selesai.

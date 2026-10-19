@@ -1,9 +1,5 @@
-# Batas aplikasi yang direncanakan
+# Aplikasi web
 
-Folder ini mencatat struktur implementasi berikutnya; belum ada aplikasi yang dapat dijalankan.
+`web/` memuat React, TypeScript, konfigurasi build, dan tes frontend. Backend API serta worker berada pada package Python `src/arker/`; keduanya dijalankan sebagai proses terpisah melalui CLI.
 
-- `web`: antarmuka TypeScript, visualisasi, formulir dan aksesibilitas.
-- `api`: autentikasi, query, secret/config management dan durable commands.
-- `worker`: pipeline, scheduler, adapter, jurnal, telemetry dan recovery.
-
-Subfolder dan package manifest dibuat bersama implementasi nyata. Lihat [arsitektur](../docs/architecture/OVERVIEW.md). Jangan menjalankan worker kedua terhadap scope produksi yang sudah dimiliki instalasi lain.
+Frontend produksi dibangun dengan `npm run build --prefix apps/web`, lalu dilayani API pada origin yang sama. Wheel membundel hasil build melalui `scripts/package.py`.

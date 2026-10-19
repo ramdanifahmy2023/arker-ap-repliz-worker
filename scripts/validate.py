@@ -1,7 +1,8 @@
-"""Check the public planning foundation without accessing services or local secrets."""
+"""Check public source and specifications without accessing services or local secrets."""
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -24,6 +25,10 @@ SECRET_PATTERNS = [
     re.compile(r"(?i)\b(?:password|secret_key|access_key|api_key)\s*[\"']?\s*[:=]\s*[\"'][A-Za-z0-9_+/.:-]{12,}[\"']"),
 ]
 LINK = re.compile(r"!?\[[^\]\n]*\]\(([^)\n]+)\)")
+APPROVED_BINARY = {
+    "src/arker/assets/fonts/BarlowSemiCondensed-Bold.ttf": "5bd6757e459a110da81b44532f0f43058e2dab2401688abca84f2fdbde193cbb",
+    "docs/assets/dashboard-preview.png": "8d520b3f83ee2f86f5bbb6d06c458697a9aa60db5c194423ebdf71bcde0f664c",
+}
 
 
 def publication_issues(name: str, source: str) -> list[str]:
@@ -65,6 +70,10 @@ def validate(root: Path = ROOT) -> list[tuple[str, str]]:
         path = root / name
         if path.is_symlink():
             issues.append((name, "symlink-not-allowed"))
+            continue
+        if name in APPROVED_BINARY:
+            if hashlib.sha256(path.read_bytes()).hexdigest() != APPROVED_BINARY[name] or (path.suffix == ".ttf" and not path.with_name("OFL.txt").is_file()):
+                issues.append((name, "unapproved-binary-or-missing-license"))
             continue
         try:
             source = path.read_text(encoding="utf-8")
@@ -126,5 +135,5 @@ if __name__ == "__main__":
     failures = validate()
     for filename, rule in failures:
         print(f"FAIL {filename}: {rule}")
-    print(f"{'FAIL' if failures else 'PASS'}: public foundation; {len(failures)} issue(s). Runtime application not tested.")
+    print(f"{'FAIL' if failures else 'PASS'}: public source; {len(failures)} issue(s). Run application tests separately.")
     sys.exit(bool(failures))

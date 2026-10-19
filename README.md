@@ -1,33 +1,54 @@
 # Arker · Repliz Worker
 
-**Panel kendali untuk memahami alur konten dan mengatur worker dari satu tempat.**
+Panel web untuk melihat perjalanan konten, mengatur worker, dan menyimpan konfigurasi dalam satu tempat. Web, API, dan worker tersedia untuk dijalankan dari repo ini.
 
-Target: web app dengan chart, progress beranimasi, konfigurasi Repliz, bank konten, dan Google Drive. Dirancang untuk Windows, macOS, dan Linux.
+**Mode awal shadow: tidak membuat jadwal publikasi atau membalas komentar.** Pengujian implementasi memakai data buatan dan transport provider terisolasi. Publikasi, balasan nyata, serta cutover dari instalasi lain belum dilakukan.
 
-> **Status: perencanaan dan fondasi dokumentasi.** Repo ini belum menjalankan worker, login, koneksi Repliz, atau publikasi. Gambar menggunakan data simulasi. CI memeriksa dokumen dan spesifikasi, bukan membuktikan aplikasi produksi sudah berjalan.
+[Mulai menjalankan](docs/OPERATIONS.md) · [Menu lengkap](docs/plans/NAVIGATION.md) · [Bukti pengujian](docs/ACCEPTANCE.md) · [Kontrak provider](docs/architecture/PROVIDERS.md)
 
-![Konsep dashboard Arker: alur kerja, chart hasil, dan progres tiga platform. Semua angka merupakan simulasi.](docs/assets/dashboard-concept.svg)
+![Dashboard aplikasi Arker dengan data fixture berlabel; tidak ada publikasi nyata.](docs/assets/dashboard-preview.png)
 
-[Rencana produk](docs/plans/PRODUCT_PLAN.md) · [Menu lengkap](docs/plans/NAVIGATION.md) · [Visual dan animasi](docs/plans/UX_PLAN.md) · [Konfigurasi](docs/plans/CONFIGURATION_PLAN.md) · [Roadmap](docs/plans/ROADMAP.md)
+## Yang tersedia
 
-## Apa yang akan bisa dilakukan?
+- Login admin dengan sesi privat, password yang di-hash, pembatasan percobaan, dan perlindungan CSRF.
+- 22 halaman untuk memantau antrean, akun, kuota, video, komentar, konfigurasi, penyimpanan, dan riwayat.
+- Chart dari database, tabel data pendamping, tema terang/gelap, tampilan HP, dan pengaturan gerak minimal.
+- Progress render dari waktu encoder FFmpeg. Tahap yang belum memiliki total menampilkan proses tanpa persen palsu.
+- Form Repliz, AI, Google Drive, dan Telegram. Kredensial terenkripsi di backend dan tidak dikirim kembali ke browser.
+- Konfigurasi berversi: tersimpan, menunggu diterapkan, dan aktif di worker. Koneksi yang gagal tidak mengganti konfigurasi aktif.
+- Start, stop, dan restart worker melalui supervisor lokal. Panel tetap hidup ketika worker berhenti.
+- Pipeline satu Reel menjadi satu aset dan tiga delivery: TikTok, Facebook Page, dan YouTube Shorts.
+- Jurnal pengiriman, reservasi kuota, rekonsiliasi hasil ambigu, backup terverifikasi, dan cleanup dengan syarat retensi.
 
-- Memantau perjalanan satu link menjadi satu aset dengan tiga tujuan: TikTok, Facebook Page, dan YouTube Shorts.
-- Melihat bagian yang lambat melalui chart durasi tahap, umur antrean, dan hasil per platform.
-- Mengatur akun, jadwal, persona, hook, balasan komentar, dan laporan dari formulir yang mudah dibaca.
-- Mengelola kredensial Repliz melalui input rahasia di backend, serta memilih bank konten dan folder Google Drive.
-- Membedakan konfigurasi **tersimpan**, **menunggu diterapkan**, dan **aktif di worker**.
-- Memeriksa hasil pengiriman yang belum pasti sebelum mencoba tindakan berikutnya.
+## Jalankan dari source
 
-## Arsitektur yang direncanakan
+Prasyarat: Python 3.12+, Node.js 22.12+, FFmpeg dan ffprobe di PATH. Node hanya diperlukan untuk membangun frontend. Jalankan perintah berikut dari checkout baru; gunakan `python3` bila nama Python di OS Anda demikian.
 
-![Arsitektur Arker: browser menuju layanan kontrol, antrean perintah, worker, dan adapter layanan.](docs/assets/architecture.svg)
+```sh
+python -m venv .venv
+```
 
-Browser mengirim perintah ke layanan kontrol. Worker mengambil perintah yang sudah divalidasi, menjalankan pekerjaan, lalu mengirim status kembali. Kredensial hanya tersedia bagi layanan yang membutuhkannya; browser tidak memanggil Repliz langsung.
+Aktifkan virtual environment:
 
-Proyek ini terpisah dari instalasi worker yang sudah ada. Tidak ada kode privat, database, token, bank konten, atau runtime produksi yang disalin. Instalasi baru tetap dalam mode simulasi sampai akun, penyimpanan, dan pemilik pengiriman ditetapkan. Dua instalasi tidak boleh mengirim untuk akun/post yang sama secara bersamaan.
+| OS | Perintah |
+| --- | --- |
+| Windows PowerShell | `.venv\Scripts\Activate.ps1` |
+| macOS / Linux | `source .venv/bin/activate` |
 
-## Navigasi produk
+```sh
+python -m pip install -r requirements.lock -e .
+npm ci --prefix apps/web
+npm run build --prefix apps/web
+arker init
+arker start
+arker open
+```
+
+`arker init` meminta email dan password melalui terminal. Tidak ada akun atau password bawaan dalam source. Panel lokal menggunakan `http://127.0.0.1:8765`; bila port dipakai, jalankan `arker start --port 18765`. Data privat memakai direktori pengguna per OS, terpisah dari Git. Pilihan `--data-dir` diletakkan sebelum nama perintah.
+
+Panduan [operasi](docs/OPERATIONS.md) menjelaskan instalasi wheel, konfigurasi bank/Drive, log, service saat login, backup, dan pemulihan. Pembungkus jendela desktop tersedia sebagai extra opsional; rilis ini tidak menyediakan installer native yang ditandatangani.
+
+## Menu aplikasi
 
 | Bagian | Menu |
 | --- | --- |
@@ -38,78 +59,65 @@ Proyek ini terpisah dari instalasi worker yang sudah ada. Tidak ada kode privat,
 | Koneksi & penyimpanan | Koneksi layanan; Telegram & notifikasi; Penyimpanan & cleanup |
 | Administrasi | Backup & pemulihan; Riwayat aktivitas; Pengaturan & akses |
 
-Ke-22 menu adalah cakupan rancangan. Halaman yang belum diimplementasikan tidak ditampilkan sebagai tombol aktif dalam rilis produk.
+## Alur kerja
 
-## Chart dan progress yang bermakna
+![Arsitektur: browser, API kontrol, antrean perintah, worker, dan adapter.](docs/assets/architecture.svg)
 
-| Tampilan | Pertanyaan yang dijawab |
-| --- | --- |
-| Tren konten masuk dan publikasi terverifikasi | Apakah pekerjaan selesai mengikuti jumlah pekerjaan masuk? |
-| Antrean per tahap | Pekerjaan menumpuk di bagian mana? |
-| Durasi tahap dan waktu menunggu | Apakah download, AI, render, Drive, atau provider yang lambat? |
-| Kuota terpakai, dipesan, dan tersisa | Akun mana yang masih bisa menerima jadwal? |
-| Timeline satu video dan tiga jalur tujuan | Bagian mana sudah selesai dan mana yang masih tertahan? |
+```mermaid
+flowchart LR
+  A[Web atau Telegram] --> B[Validasi dan deduplikasi]
+  B --> C[Download dan identitas sumber]
+  C --> D[6 frame, konteks, transkrip opsional]
+  D --> E[Hook dan render bersama]
+  E --> F[Bank lokal]
+  F --> G[Sinkronisasi eksternal]
+  G --> H[ID, ukuran, MD5, SHA1, SHA256 Drive]
+  H --> I[Rotasi dan reservasi kuota]
+  I --> T[TikTok]
+  I --> P[Facebook Page]
+  I --> Y[YouTube Shorts]
+  T --> V[Verifikasi hasil per tujuan]
+  P --> V
+  Y --> V
+  V --> R[Histori dan balasan berkonteks]
+  V --> K[Cleanup file sumber setelah retensi]
+```
 
-Persentase hanya muncul ketika jumlah pekerjaan atau ukuran total diketahui. Tahap tanpa ukuran pasti menampilkan nama tahap dan waktu berjalan. “Terjadwal” tidak dihitung sebagai “Sudah tayang”. Animasi mengikuti data, berhenti ketika data usang, dan menghormati pengaturan gerak minimal.
+Worker mempertahankan orientasi sumber, zoom 110%, tanpa mirror, hook sebelum detik 3, H.264/AAC, serta audio sumber. Caption publik selalu menyertakan `source: @username` berdasarkan metadata pemilik. Maksimal 20 video per akun per hari Asia/Jakarta; kuota balasan dihitung terpisah.
 
-## Pengaturan koneksi
+Jadwal yang baru diterima tidak dihitung sebagai tayang. Hasil yang tidak pasti ditahan, lalu diperiksa melalui bukti provider. Mode shadow berhenti pada preview dan tidak membutuhkan akun provider untuk uji media lokal.
 
-![Alur konfigurasi: isi, periksa, tinjau dampak, terapkan, dan konfirmasi worker.](docs/assets/configuration-flow.svg)
+## Konfigurasi yang bisa diperiksa
 
-- **Repliz:** Access Key dan Secret Key, tes koneksi hanya-baca, identitas koneksi, waktu tes, serta status aktivasi. Nilai yang sudah tersimpan tidak dikirim kembali ke browser.
-- **Bank konten:** pilih folder pada mesin worker, periksa volume, hak akses, ruang kosong, dan keterkaitannya dengan folder Drive. Pemilihan dari HP tetap memilih folder mesin worker, bukan folder HP.
-- **Google Drive:** masukkan link folder, baca ID, verifikasi akses serta kecocokan file. Sinkronisasi dan pemeriksaan checksum merupakan dua hal berbeda.
+![Alur konfigurasi: isi, periksa, simpan, terapkan, dan konfirmasi worker.](docs/assets/configuration-flow.svg)
 
-Perubahan lokasi hanya berlaku untuk pekerjaan baru setelah pemeriksaan. Aset lama mempertahankan referensinya. Pemindahan arsip menjadi pekerjaan migrasi tersendiri.
+Lokasi bank adalah folder pada mesin worker. Memasukkan link Drive tidak membuktikan file sudah tersinkron. Satu aplikasi eksternal menangani sinkronisasi; Arker memeriksa identitas, ukuran, dan semua checksum sebelum pengiriman. Google Drive Desktop tersedia di Windows/macOS, [tidak di Linux](https://support.google.com/drive/answer/2375082?hl=en). Linux memakai sinkronisasi eksternal yang disiapkan operator; Arker tidak menambah uploader kedua.
 
-## Windows, macOS, dan Linux
+## Pengujian dan batas bukti
 
-| Komponen | Target dukungan | Status saat ini |
-| --- | --- | --- |
-| Dokumentasi dan validator | Windows / macOS / Linux, Python 3.12+ | Tersedia; matriks CI memeriksa fondasi ini |
-| Web UI dan layanan kontrol | Ketiga OS | Direncanakan |
-| Worker, FFmpeg, dan downloader | Ketiga OS melalui adapter | Belum diimplementasikan atau diuji lintas OS |
-| Sinkronisasi Drive Desktop | Windows / macOS | Integrasi direncanakan |
-| Sinkronisasi Drive Linux | Adapter sinkronisasi terpisah | Belum dipilih dan belum diuji |
-| Paket aplikasi desktop | Ketiga OS, setelah web stabil | Tahap lanjutan |
+```sh
+python -m pip install -r requirements-dev.lock -e .
+python scripts/verify.py --media
+python scripts/package.py
+```
 
-Google menyatakan Drive for desktop tidak tersedia di Linux. Dukungan Linux memerlukan adapter sinkronisasi yang diuji, bukan mengganti nama perintah macOS. Lihat [persyaratan Google Drive](https://support.google.com/drive/answer/2375082?hl=en) dan [rencana lintas platform](docs/architecture/CROSS_PLATFORM.md).
+Verifier menjalankan pemeriksaan publikasi source, suite backend/worker/lifecycle, tes frontend, build, dan preview FFmpeg nyata dengan video buatan. Jaringan provider diblokir pada suite Python. CI menjalankan verifier yang sama di Windows, macOS, dan Linux. Lihat hasil pada tab [Actions](https://github.com/ramdanifahmy2023/arker-ap-repliz-worker/actions) dan [matriks penerimaan](docs/ACCEPTANCE.md).
+
+Tes kontrak provider memakai fixture, bukan akun produksi. Model whisper.cpp untuk transkripsi, sinkronisasi Drive milik operator, autostart native, dan publikasi/reply nyata mempunyai batas bukti tersendiri. Mode live memerlukan scope akun eksklusif; aplikasi ini tidak mendeteksi atau mematikan pengirim di mesin lain.
 
 ## Struktur proyek
 
 ```text
-apps/                       Batas tanggung jawab web, API, dan worker yang direncanakan
-config/examples/            Contoh konfigurasi tanpa rahasia
-docs/
-  architecture/             Komponen, kontrak kontrol, dan dukungan OS
-  assets/                   Diagram SVG dan konsep dashboard
-  plans/                    Produk, menu, UX, konfigurasi, roadmap
-  WORKLOG.md                Jejak pekerjaan dan batas bukti
-spec/                       Spesifikasi menu dan metrik yang dapat dibaca mesin
-scripts/                    Validator dan pembuat visual dokumentasi
-tests/                      Pemeriksaan validator publikasi repo
-.github/                    CI lintas OS dan template kontribusi
+apps/web/                 React, TypeScript, UI, dan tes frontend
+src/arker/                API, autentikasi, DB, konfigurasi, worker, CLI
+src/arker/adapters/       Repliz, Drive, AI, Telegram, downloader, FFmpeg
+src/arker/assets/fonts/  Font Barlow dan lisensi OFL
+config/examples/         Contoh konfigurasi tanpa nilai akses
+docs/                    Operasi, penerimaan, arsitektur, rencana, worklog
+spec/                    Spesifikasi navigasi dan makna metrik
+scripts/                 Verifier, packaging, visual, pengujian browser
+tests/                   Kontrak, kegagalan, recovery, dan lifecycle
+.github/workflows/       CI tiga OS
 ```
 
-## Memeriksa repo
-
-Jalankan dari folder repo dengan Python 3.12 atau lebih baru:
-
-```sh
-python scripts/validate.py
-python -m unittest discover -s tests -v
-```
-
-Pada sistem yang menyediakan Python sebagai `python3`, gunakan nama tersebut. Perintah ini tidak mengakses provider, membaca kredensial, menjalankan worker, atau mengirim konten.
-
-## Urutan pembangunan
-
-1. Lengkapi kontrak data, konfigurasi, dan desain layar utama.
-2. Bangun panel baca status beserta chart, progres, dan state offline.
-3. Tambahkan login, penyimpanan rahasia, dan penerapan konfigurasi yang terkonfirmasi.
-4. Bangun adapter worker dengan deduplikasi, kuota, jurnal, dan kepemilikan pengiriman.
-5. Uji integrasi terisolasi pada Windows, macOS, dan Linux sebelum aktivasi nyata.
-
-Rincian hasil yang harus dibuktikan ada di [roadmap](docs/plans/ROADMAP.md). Panduan kontribusi ada di [CONTRIBUTING.md](CONTRIBUTING.md), dan penanganan informasi sensitif ada di [SECURITY.md](SECURITY.md).
-
-Lisensi distribusi belum ditetapkan. Repo publik tidak dengan sendirinya berarti lisensi MIT atau izin distribusi ulang tanpa batas.
+Proyek ini tidak menyalin atau menautkan kode privat, runtime, database, credential, maupun bank instalasi lain. Baca [keamanan](SECURITY.md) dan [panduan kontribusi](CONTRIBUTING.md). Lisensi source belum ditetapkan; font yang dibundel memakai SIL Open Font License.

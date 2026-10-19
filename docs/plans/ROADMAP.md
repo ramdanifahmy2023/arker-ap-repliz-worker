@@ -1,6 +1,6 @@
 # Roadmap dan kriteria penerimaan
 
-Status awal 19 Oktober 2026. Tidak ada tanggal peluncuran yang dijanjikan.
+Rancangan tahap awal 19 Oktober 2026. P0 sampai implementasi web/pipeline dan pengujian terisolasi tersedia. Lihat [penerimaan](../ACCEPTANCE.md) untuk bukti per area. P6 aktivasi nyata ditunda atas instruksi pengguna; pembungkus desktop opsional tersedia, installer/signing belum dibuktikan.
 
 | Tahap | Hasil | Bukti selesai |
 | --- | --- | --- |

@@ -1,12 +1,10 @@
 # Berkontribusi
 
-Saat ini kontribusi berfokus pada rencana, kontrak, visual, dan fondasi validasi. Labeli usulan, fixture, implementasi, dan bukti runtime secara berbeda.
+1. Buat branch `work/YYYYMMDD-topik` dan worktree dari main terbaru.
+2. Gunakan runtime/fixture sendiri. Jangan menghubungkan credential produksi atau menyalin instalasi lain.
+3. Pasang dependency lock dan jalankan `python scripts/verify.py --media`. Perubahan UI juga diperiksa melalui browser pada desktop/HP dan kedua tema.
+4. Tinjau log kegagalan, keyboard, empty/loading/error/offline, serta reduced motion. Jangan memakai angka buatan tanpa label fixture.
+5. Tulis PR yang menjelaskan masalah, perilaku hasil, pengujian, dan batas bukti. Tunggu CI pada SHA yang ditinjau.
+6. Perbarui docs/WORKLOG.md dan panduan operasi yang berubah. Jangan unggah DB, credential, media pengguna, atau log privat.
 
-1. Buat branch `work/YYYYMMDD-topik` dari main terbaru.
-2. Gunakan runtime/fixture sendiri; jangan menghubungkan kredensial produksi.
-3. Periksa perubahan dengan `python scripts/validate.py` dan `python -m unittest discover -s tests -v`.
-4. Tinjau visual pada ukuran sebenarnya dan layar sempit jika mengubah desain.
-5. Tulis PR tentang masalah, perilaku hasil, pemeriksaan, serta batas bukti. Tunggu CI pada SHA yang ditinjau.
-6. Perbarui docs/WORKLOG.md dan dokumentasi yang berubah; jangan memasukkan data privat ke issue atau artefak CI.
-
-Lisensi belum ditetapkan; jangan menambahkan kode pihak ketiga tanpa kejelasan asal dan lisensinya.
+Lisensi source belum ditetapkan. Jangan menambahkan kode pihak ketiga tanpa kejelasan asal/lisensi; font yang dibundel menyertakan OFL. Jangan force-push atau menyamakan fixture PASS dengan publikasi provider terverifikasi.

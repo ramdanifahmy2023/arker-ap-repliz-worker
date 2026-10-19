@@ -1,6 +1,6 @@
 # Rencana produk Arker
 
-Tanggal: 19 Oktober 2026. Status: rancangan; aplikasi belum diimplementasikan.
+Tanggal: 19 Oktober 2026. Arsip rancangan awal; implementasi tersedia. Status dan batas bukti terbaru ada di [penerimaan](../ACCEPTANCE.md).
 
 ## Permintaan yang sudah ditetapkan
 
@@ -11,10 +11,10 @@ Tanggal: 19 Oktober 2026. Status: rancangan; aplikasi belum diimplementasikan.
 - Form konfigurasi kredensial Repliz, folder bank konten, dan link folder Google Drive.
 - Target Windows, macOS, dan Linux. Ketersediaan suatu fitur harus dibuktikan per OS.
 
-## Usulan yang belum menjadi keputusan implementasi
+## Keputusan implementasi dan pekerjaan berikutnya
 
 - Web app sebagai antarmuka pertama; pembungkus desktop setelah kebutuhan native jelas.
-- Backend Python dan frontend TypeScript; framework/versi ditetapkan melalui keputusan arsitektur sebelum implementasi, bukan dari template dokumentasi.
+- Backend FastAPI/Python dan frontend React/TypeScript dengan versi dipin pada manifest/lockfile.
 - Akses jarak jauh melalui jalur privat atau tunnel dengan autentikasi. Penyedia, domain, dan metode login belum dipasang.
 - Akun admin tunggal pada rilis awal. Identitas dan password admin diisi saat pemasangan privat, tidak dimasukkan repo publik.
 - Desain dark/light mengikuti sistem dengan pilihan pengguna; palet dan tipografi final ditinjau melalui preview.

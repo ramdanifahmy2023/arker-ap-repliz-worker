@@ -1,7 +1,7 @@
 # Panduan dokumentasi
 
-Mulai dari [rencana produk](plans/PRODUCT_PLAN.md), lalu baca [menu](plans/NAVIGATION.md), [UX](plans/UX_PLAN.md), dan [konfigurasi](plans/CONFIGURATION_PLAN.md).
+Untuk menjalankan aplikasi, baca [operasi](OPERATIONS.md), [penerimaan](ACCEPTANCE.md), [dukungan OS](architecture/CROSS_PLATFORM.md), dan [kontrak provider](architecture/PROVIDERS.md).
 
-Untuk implementasi, baca [arsitektur](architecture/OVERVIEW.md), [kontrak kontrol](architecture/CONTROL_CONTRACT.md), [dukungan OS](architecture/CROSS_PLATFORM.md), dan [roadmap](plans/ROADMAP.md).
+Untuk memahami desain produk, baca [rencana produk](plans/PRODUCT_PLAN.md), [menu](plans/NAVIGATION.md), [UX](plans/UX_PLAN.md), serta [konfigurasi](plans/CONFIGURATION_PLAN.md). Dokumen plans mencatat rancangan awal; status implementasi dan batas bukti mengikuti penerimaan/worklog.
 
-Semua dokumen mendeskripsikan rancangan kecuali diberi bukti implementasi yang spesifik. Visual dashboard memakai data simulasi. [Worklog](WORKLOG.md) mencatat pemeriksaan dan batas hasil.
+[Kontrak implementasi](architecture/IMPLEMENTATION_CONTRACT.md) menjelaskan koordinasi API/UI/worker. [Worklog](WORKLOG.md) mencatat perubahan dan bukti. Gambar konsep memakai simulasi; screenshot pengujian juga berlabel fixture.
