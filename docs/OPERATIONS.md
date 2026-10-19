@@ -2,7 +2,7 @@
 
 ## Instalasi dan data privat
 
-Ikuti instalasi source di [README](../README.md). Alternatifnya, bangun wheel dengan `python scripts/package.py`, lalu pasang file `.whl` pada environment baru dengan `python -m pip install <file-wheel>`. Wheel memuat frontend yang sudah dibangun, API, worker, dan font.
+Ikuti instalasi source di [README](../README.md). Untuk membuat wheel, pasang prasyarat build dengan `python -m pip install -r requirements-dev.lock` setelah frontend dibangun, lalu jalankan `python scripts/package.py`. Pasang file `.whl` pada environment baru dengan `python -m pip install <file-wheel>`. Wheel memuat frontend yang sudah dibangun, API, worker, dan font.
 
 | Sistem | Direktori data bawaan |
 | --- | --- |

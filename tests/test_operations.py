@@ -190,30 +190,37 @@ class OperationsTests(unittest.TestCase):
         self.assertIn("UMask=0077", linux)
 
     def test_supervisor_start_pause_and_stop_own_children(self):
+        def wait_for(predicate, message):
+            deadline = time.monotonic() + 15
+            while time.monotonic() < deadline:
+                if predicate():
+                    return
+                time.sleep(.1)
+            self.fail(message)
+
         with socket.socket() as listener:
             listener.bind(("127.0.0.1", 0))
             port = listener.getsockname()[1]
         runtime = self.store.data_dir
         try:
             self.assertTrue(start_detached(runtime, "127.0.0.1", port)["running"])
-            deadline = time.monotonic() + 15
-            while time.monotonic() < deadline and not status(runtime)["worker_running"]:
-                time.sleep(.1)
-            self.assertTrue(status(runtime)["worker_running"])
+            wait_for(lambda: status(runtime)["worker_running"], "Worker did not start")
+            wait_for(lambda: self.store.get_meta("applied_version") == 1, "Initial configuration was not applied")
             command = self.store.command("pause_processing", {}, "fixture-pause")
-            while time.monotonic() < deadline and not self.store.get_meta("processing_paused", False):
-                time.sleep(.1)
+            def pause_acknowledged():
+                with self.store.connect() as db:
+                    return db.execute("SELECT status FROM commands WHERE id=?", (command["id"],)).fetchone()[0] == "succeeded"
+
+            wait_for(pause_acknowledged, "Pause command was not acknowledged")
             self.assertTrue(self.store.get_meta("processing_paused"))
             self.assertEqual(self.store.get_meta("applied_version"), 1)
             before = status(runtime)["worker_pid"]
             self.assertTrue(worker_action(runtime, "stop")["accepted"])
-            while time.monotonic() < deadline and status(runtime)["worker_running"]:
-                time.sleep(.1)
+            wait_for(lambda: not status(runtime)["worker_running"], "Worker did not stop")
             self.assertTrue(status(runtime)["running"])
             self.assertFalse(status(runtime)["worker_running"])
             self.assertTrue(worker_action(runtime, "start")["accepted"])
-            while time.monotonic() < deadline and not status(runtime)["worker_running"]:
-                time.sleep(.1)
+            wait_for(lambda: status(runtime)["worker_running"], "Worker did not restart")
             self.assertTrue(status(runtime)["worker_running"])
             self.assertNotEqual(status(runtime)["worker_pid"], before)
         finally:
