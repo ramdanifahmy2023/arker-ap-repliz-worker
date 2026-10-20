@@ -20,15 +20,18 @@ async def render_preview(output: Path) -> dict:
     before = await media.probe(source)
     frames = await media.frames(source, output, before)
     progress = []
-    rendered = await media.render(source, output / "preview.mp4", "Lihat bedanya sebelum lewat", on_progress=lambda done, total: progress.append((done, total)))
+    rendered = await media.render(source, output / "preview.mp4", "Yang kiri lebih tinggi", on_progress=lambda done, total: progress.append((done, total)))
     after = await media.probe(output / "preview.mp4")
-    for stamp, name in ((2.9, "hook-visible.png"), (3.0, "hook-ended.png")):
-        await process(["ffmpeg", "-v", "error", "-y", "-ss", str(stamp), "-i", output / "preview.mp4", "-frames:v", "1", output / name])
+    for frame, name in ((0, "hook-first-frame.png"), (89, "hook-visible.png"), (90, "hook-ended.png")):
+        await process(["ffmpeg", "-v", "error", "-y", "-i", output / "preview.mp4", "-vf", f"select=eq(n\\,{frame})", "-frames:v", "1", output / name])
+    await process(["ffmpeg", "-v", "error", "-y", "-i", source, "-vf", "fps=30,scale=396:704,crop=360:640,setsar=1", "-frames:v", "1", output / "without-hook.png"])
     from PIL import Image, ImageChops, ImageStat
-    with Image.open(output / "hook-visible.png") as first, Image.open(output / "hook-ended.png") as second:
-        region = (30, 70, 330, 220)
+    with Image.open(output / "hook-visible.png") as first, Image.open(output / "hook-ended.png") as second, Image.open(output / "hook-first-frame.png") as opening, Image.open(output / "without-hook.png") as plain:
+        region = tuple(rendered['layout']['backing_bounds'])
         difference = ImageStat.Stat(ImageChops.difference(first.crop(region), second.crop(region))).mean
-        if sum(difference) < 5:
+        opening_difference = ImageStat.Stat(ImageChops.difference(opening.crop(region), plain.crop(region))).mean
+        ended_difference = ImageStat.Stat(ImageChops.difference(second.crop(region), plain.crop(region))).mean
+        if sum(difference) < 5 or sum(opening_difference) < 5 or max(ended_difference) > 3:
             raise RuntimeError("Hook belum terbukti terlihat sebelum detik 3 dan hilang pada detik 3.")
         # The asymmetric lower shapes detect accidental mirroring independently of text.
         left = second.getpixel((50, 400))
@@ -51,6 +54,7 @@ async def render_preview(output: Path) -> dict:
     checks = {"h264": after["video_codec"] == "h264", "aac": after["audio_codec"] == "aac",
               "portrait_preserved": after["width"] == 360 and after["height"] == 640,
               "fps_30": video["r_frame_rate"] == "30/1", "hook_before_3_seconds": True,
+              "hook_visible_first_frame": True, "hook_visible_frame_89": True, "hook_absent_frame_90": True,
               "source_not_mirrored": True, "frames": len(frames) == 6,
               "zoom_110_percent": True, "measured_progress": len(progress) > 0 and progress[-1][0] >= 4.9,
               "original_audio_preserved": correlation > .99 and abs(after["duration"] - before["duration"]) < .15}

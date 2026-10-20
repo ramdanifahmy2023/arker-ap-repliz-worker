@@ -172,6 +172,54 @@ class APITests(unittest.TestCase):
         self.assertEqual(first.json()['command']['id'], second.json()['command']['id'])
         self.assertEqual(second.json()['command']['status'], 'succeeded')
 
+    def test_held_caption_has_explicit_retry_action_but_cannot_reconcile(self):
+        asset = self.client.post('/api/intake', json={'urls':['https://instagram.com/reel/CaptionRetryFixture/']}).json()['accepted'][0]['id']
+        with self.store.connect() as db:
+            delivery = db.execute('SELECT id FROM deliveries WHERE asset_id=? LIMIT 1', (asset,)).fetchone()[0]
+            db.execute("UPDATE deliveries SET state='held',error='Caption perlu diperiksa.' WHERE id=?", (delivery,))
+        expected = [{'kind':'retry_delivery_caption', 'label':'Ulangi caption & lanjutkan', 'payload':{'delivery_id':delivery}}]
+        collections = [
+            self.client.get(f'/api/assets/{asset}').json()['deliveries'],
+            self.client.get('/api/deliveries').json()['items'],
+            self.client.get('/api/overview').json()['attention'],
+        ]
+        for items in collections:
+            self.assertEqual(next(item for item in items if item['id'] == delivery)['available_actions'], expected)
+        blocked = {'kind':'reconcile_delivery', 'payload':{'delivery_id':delivery}, 'idempotency_key':'caption-wrong-action'}
+        self.assertEqual(self.client.post('/api/commands', json=blocked).status_code, 409)
+        command = {**expected[0], 'idempotency_key':'caption-retry-fixture'}
+        del command['label']
+        first = self.client.post('/api/commands', json=command)
+        self.assertEqual(first.status_code, 200)
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT state FROM deliveries WHERE id=?', (delivery,)).fetchone()[0], 'held')
+            db.execute("UPDATE deliveries SET state='pending' WHERE id=?", (delivery,))
+        repeated = self.client.post('/api/commands', json=command)
+        self.assertEqual(repeated.status_code, 200)
+        self.assertEqual(repeated.json()['command']['id'], first.json()['command']['id'])
+
+    def test_caption_retry_rejects_any_intent_remote_or_nonheld_delivery(self):
+        cases = [('held','schedule',None), ('held','reply',None), ('held',None,'remote-fixture'), ('pending',None,None), ('unknown','schedule',None), ('unknown','reply',None)]
+        for index, (state, operation, remote) in enumerate(cases):
+            with self.subTest(state=state, operation=operation, remote=remote):
+                asset = self.client.post('/api/intake', json={'urls':[f'https://instagram.com/reel/CaptionBlocked{index}/']}).json()['accepted'][0]['id']
+                with self.store.connect() as db:
+                    delivery = db.execute('SELECT id FROM deliveries WHERE asset_id=? LIMIT 1', (asset,)).fetchone()[0]
+                    db.execute('UPDATE deliveries SET state=?,remote_id=? WHERE id=?', (state,remote,delivery))
+                    if operation:
+                        db.execute('INSERT INTO attempts(id,delivery_id,operation,request_key,state,created_at,updated_at) VALUES (?,?,?,?,?,?,?)', (uid(),delivery,operation,uid(),'unknown',now(),now()))
+                detail = self.client.get(f'/api/assets/{asset}').json()
+                actions = next(item for item in detail['deliveries'] if item['id'] == delivery)['available_actions']
+                self.assertNotIn('retry_delivery_caption', [action['kind'] for action in actions])
+                command = {'kind':'retry_delivery_caption','payload':{'delivery_id':delivery},'idempotency_key':uid()}
+                self.assertEqual(self.client.post('/api/commands', json=command).status_code, 409)
+                if state == 'unknown' and operation == 'reply':
+                    command.update(kind='reconcile_delivery', idempotency_key=uid())
+                    self.assertEqual(actions, [])
+                    self.assertEqual(self.client.post('/api/commands', json=command).status_code, 409)
+        command = {'kind':'retry_delivery_caption','payload':{'delivery_id':'missing'},'idempotency_key':uid()}
+        self.assertEqual(self.client.post('/api/commands', json=command).status_code, 409)
+
     def test_restore_guard_prevents_module_activation(self):
         self.store.set_meta('restore_requires_reconciliation', True)
         config = self.store.configuration()['config']

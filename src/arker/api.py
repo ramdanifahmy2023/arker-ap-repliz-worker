@@ -252,8 +252,8 @@ def create_app(data_dir: str | Path, *, web_dir: Path | None = None, secure_cook
             total = db.execute('SELECT COUNT(*) FROM deliveries'+query, values).fetchone()[0]
             items = [read_models.record(row) for row in db.execute('SELECT * FROM deliveries'+query+' ORDER BY created_at DESC LIMIT ? OFFSET ?', [*values, limit, (page-1)*limit])]
             for item in items:
-                attempted = db.execute("SELECT 1 FROM attempts WHERE delivery_id=? AND operation='schedule' LIMIT 1", (item['id'],)).fetchone()
-                item['available_actions'] = read_models.delivery_actions(item, bool(attempted))
+                attempts = db.execute("SELECT COUNT(*) total, COUNT(CASE WHEN operation='schedule' THEN 1 END) schedules FROM attempts WHERE delivery_id=?", (item['id'],)).fetchone()
+                item['available_actions'] = read_models.delivery_actions(item, bool(attempts['total']), has_schedule_attempt=bool(attempts['schedules']))
         return {'items': items, 'total': total, 'page': page, 'limit': limit}
 
     @app.get('/api/comments')
@@ -411,7 +411,7 @@ def create_app(data_dir: str | Path, *, web_dir: Path | None = None, secure_cook
 
     @app.post('/api/commands')
     def commands(body: Command):
-        allowed = {'apply_configuration': {'version'}, 'pause_processing': set(), 'resume_processing': set(), 'pause_reply': set(), 'resume_reply': set(), 'pause_reports': set(), 'resume_reports': set(), 'sync_accounts': set(), 'reconcile_delivery': {'delivery_id'}, 'retry_asset': {'asset_id'}, 'backup': set(), 'cleanup': set(), 'cleanup_plan': set()}
+        allowed = {'apply_configuration': {'version'}, 'pause_processing': set(), 'resume_processing': set(), 'pause_reply': set(), 'resume_reply': set(), 'pause_reports': set(), 'resume_reports': set(), 'sync_accounts': set(), 'reconcile_delivery': {'delivery_id'}, 'retry_delivery_caption': {'delivery_id'}, 'retry_asset': {'asset_id'}, 'backup': set(), 'cleanup': set(), 'cleanup_plan': set()}
         if body.kind not in allowed or set(body.payload) != allowed[body.kind]:
             raise HTTPException(422, 'Perintah atau argumennya tidak didukung.')
         with store.connect() as db:
@@ -434,12 +434,14 @@ def create_app(data_dir: str | Path, *, web_dir: Path | None = None, secure_cook
             with store.connect() as db:
                 if db.execute('SELECT 1 FROM attempts WHERE delivery_id IN (SELECT id FROM deliveries WHERE asset_id=?) LIMIT 1', (body.payload['asset_id'],)).fetchone():
                     raise HTTPException(409, 'Periksa hasil kirim terdahulu sebelum mengulang proses.')
-        if body.kind == 'reconcile_delivery':
+        if body.kind in ('reconcile_delivery', 'retry_delivery_caption'):
             with store.connect() as db:
                 row = db.execute('SELECT * FROM deliveries WHERE id=?', (body.payload['delivery_id'],)).fetchone()
-                attempted = db.execute("SELECT 1 FROM attempts WHERE delivery_id=? AND operation='schedule' LIMIT 1", (body.payload['delivery_id'],)).fetchone()
-            if not row or not read_models.delivery_actions(dict(row), bool(attempted)):
-                raise HTTPException(409, 'Delivery belum memiliki hasil remote yang dapat diperiksa.')
+                attempts = db.execute("SELECT COUNT(*) total, COUNT(CASE WHEN operation='schedule' THEN 1 END) schedules FROM attempts WHERE delivery_id=?", (body.payload['delivery_id'],)).fetchone()
+            actions = read_models.delivery_actions(dict(row), bool(attempts['total']), has_schedule_attempt=bool(attempts['schedules'])) if row else []
+            if not any(action['kind'] == body.kind for action in actions):
+                message = 'Delivery belum memiliki hasil remote yang dapat diperiksa.' if body.kind == 'reconcile_delivery' else 'Caption hanya dapat diulang pada delivery ditahan tanpa intent atau hasil remote.'
+                raise HTTPException(409, message)
         try:
             return {'command': store.command(body.kind, body.payload, body.idempotency_key)}
         except ValueError:

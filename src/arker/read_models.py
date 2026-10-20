@@ -25,9 +25,11 @@ def asset_actions(asset, deliveries=(), has_attempts=False):
     return []
 
 
-def delivery_actions(delivery, has_attempt=False):
-    if delivery['state'] in ('unknown', 'submit_unknown', 'scheduled', 'accepted') and (delivery.get('remote_id') or has_attempt):
+def delivery_actions(delivery, has_attempt=False, *, has_schedule_attempt=False):
+    if delivery['state'] in ('unknown', 'submit_unknown', 'scheduled', 'accepted') and (delivery.get('remote_id') or has_schedule_attempt):
         return [{'kind': 'reconcile_delivery', 'label': 'Periksa hasil', 'payload': {'delivery_id': delivery['id']}}]
+    if delivery['state'] == 'held' and not has_attempt and not delivery.get('remote_id'):
+        return [{'kind': 'retry_delivery_caption', 'label': 'Ulangi caption & lanjutkan', 'payload': {'delivery_id': delivery['id']}}]
     return []
 
 
@@ -91,8 +93,8 @@ def asset_detail(store, identifier):
         attempted = db.execute('SELECT 1 FROM attempts WHERE delivery_id IN (SELECT id FROM deliveries WHERE asset_id=?) LIMIT 1', (identifier,)).fetchone()
         asset['available_actions'] = asset_actions(asset, deliveries, bool(attempted))
         for item in deliveries:
-            attempted = db.execute("SELECT 1 FROM attempts WHERE delivery_id=? AND operation='schedule' LIMIT 1", (item['id'],)).fetchone()
-            item['available_actions'] = delivery_actions(item, bool(attempted))
+            attempts = db.execute("SELECT COUNT(*) total, COUNT(CASE WHEN operation='schedule' THEN 1 END) schedules FROM attempts WHERE delivery_id=?", (item['id'],)).fetchone()
+            item['available_actions'] = delivery_actions(item, bool(attempts['total']), has_schedule_attempt=bool(attempts['schedules']))
         events = [record(r) for r in db.execute('SELECT * FROM events WHERE entity_id=? OR entity_id IN (SELECT id FROM deliveries WHERE asset_id=?) ORDER BY id DESC LIMIT 250', (identifier, identifier))]
         artifacts = [record(r) for r in db.execute('SELECT * FROM artifacts WHERE asset_id=?', (identifier,))]
         for item in artifacts:
@@ -128,8 +130,8 @@ def overview(store):
             item['available_actions'] = asset_actions(item, destinations, bool(attempted))
         delivery_attention = [dict(record(r), entity_type='delivery') for r in db.execute("SELECT * FROM deliveries WHERE state IN ('failed','blocked','unknown','submit_unknown','held','waiting') ORDER BY updated_at DESC LIMIT 20")]
         for item in delivery_attention:
-            attempted = db.execute("SELECT 1 FROM attempts WHERE delivery_id=? AND operation='schedule' LIMIT 1", (item['id'],)).fetchone()
-            item['available_actions'] = delivery_actions(item, bool(attempted))
+            attempts = db.execute("SELECT COUNT(*) total, COUNT(CASE WHEN operation='schedule' THEN 1 END) schedules FROM attempts WHERE delivery_id=?", (item['id'],)).fetchone()
+            item['available_actions'] = delivery_actions(item, bool(attempts['total']), has_schedule_attempt=bool(attempts['schedules']))
         attention.extend(delivery_attention)
         active = [record(r) for r in db.execute("SELECT * FROM assets WHERE state NOT IN ('completed','published','failed','cancelled','preview_ready') ORDER BY updated_at DESC LIMIT 12")]
         duration_rows = db.execute("SELECT payload FROM events WHERE kind IN ('stage.completed','asset.stage') AND created_at>?", (stamp-7*86400,)).fetchall()

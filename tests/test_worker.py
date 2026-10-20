@@ -114,6 +114,58 @@ class WorkerTests(unittest.IsolatedAsyncioTestCase):
         with self.store.connect() as db:
             self.assertEqual(db.execute('SELECT stage FROM assets').fetchone()[0], 'inspect')
 
+    async def test_draft_provenance_and_completed_render_survive_restart(self):
+        asset(self.store)
+        media = self.worker.injected['media']
+        media.render = AsyncMock(wraps=media.render)
+        for _ in range(4):
+            await self.worker.tick()
+        with self.store.connect() as db:
+            row = db.execute('SELECT hook,caption,context FROM assets').fetchone()
+            context = json.loads(row['context'])
+            self.assertEqual(context['copy_origin'], 'source_excerpt')
+            self.assertEqual(context['copy_version'], 'natural-id-v1')
+            self.assertFalse(context['ai_used'])
+        before = tuple(row)
+        self.worker.recover()
+        await self.worker.tick()
+        media.render.assert_awaited_once()
+        with self.store.connect() as db:
+            self.assertEqual(tuple(db.execute('SELECT hook,caption,context FROM assets').fetchone()), before)
+
+    async def test_bank_retry_reuses_verified_render_without_changing_style(self):
+        asset(self.store)
+        media = self.worker.injected['media']
+        media.render = AsyncMock(wraps=media.render)
+        for _ in range(3):
+            await self.worker.tick()
+        with patch('arker.worker.shutil.copyfile', side_effect=OSError('fixture disk unavailable')):
+            await self.worker.tick()
+        original = self.worker.get_artifact('fixture', 'render')
+        await self.worker.command('retry_asset', {'asset_id': 'fixture'})
+        await self.worker.tick()
+        media.render.assert_awaited_once()
+        self.assertEqual(self.worker.get_artifact('fixture', 'bank')['sha256'], original['sha256'])
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT state FROM assets').fetchone()[0], 'preview_ready')
+
+    async def test_bank_retry_holds_changed_render_instead_of_rerendering(self):
+        asset(self.store)
+        media = self.worker.injected['media']
+        media.render = AsyncMock(wraps=media.render)
+        for _ in range(3):
+            await self.worker.tick()
+        with patch('arker.worker.shutil.copyfile', side_effect=OSError('fixture disk unavailable')):
+            await self.worker.tick()
+        rendered = self.worker.get_artifact('fixture', 'render')
+        Path(rendered['path']).write_bytes(b'changed fixture')
+        await self.worker.command('retry_asset', {'asset_id': 'fixture'})
+        await self.worker.tick()
+        media.render.assert_awaited_once()
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT state FROM assets').fetchone()[0], 'held')
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM artifacts WHERE kind='bank'").fetchone()[0], 0)
+
     async def test_job_keeps_old_bank_configuration(self):
         asset(self.store)
         old_bank = self.store.config_at(1)['storage']['bank_directory']
@@ -351,6 +403,78 @@ class WorkerTests(unittest.IsolatedAsyncioTestCase):
             db.execute('INSERT INTO personas VALUES (?,?,?,?,?)', ('tone', 2, 'Fixture', 'Gaya baru', STAMP))
             db.execute('INSERT INTO account_personas VALUES (?,?,?)', ('account-tiktok', 'tone', 1))
         self.assertEqual(self.worker.persona('account-tiktok')['style'], 'Gaya pertama')
+
+    async def test_persona_caption_receives_rendered_hook_and_reconcile_keeps_original_copy(self):
+        config, version = await self.live()
+        config['ai']['enabled'] = True
+        version = self.store.save_configuration(config, version)
+        self.store.set_meta('applied_version', version)
+        await self.ready(version)
+        hook = 'Pintunya dibukain si kucing'
+        context = {'facts': ['Kucing mendorong pintu.'], 'description': 'Kucing mendorong pintu.'}
+        with self.store.connect() as db:
+            db.execute('UPDATE assets SET hook=?,context=?', (hook, json.dumps(context)))
+            db.execute('INSERT INTO personas VALUES (?,?,?,?,?)', ('tone', 1, 'Fixture', 'Santai', STAMP))
+            db.execute('INSERT INTO account_personas VALUES (?,?,?)', ('account-tiktok', 'tone', 1))
+        ai = AsyncMock()
+        ai.draft.return_value = {'hook': hook, 'caption': 'Pintunya kebuka didorong kucing.', 'facts': context['facts']}
+        self.worker.injected['ai'] = ai
+        await self.worker.deliver(config)
+        ai.draft.assert_awaited_once()
+        received = ai.draft.call_args.args[0]
+        self.assertEqual(received['rendered_hook'], hook)
+        self.assertEqual(received['base_caption'], 'Keterangan fixture')
+        self.assertEqual(received['facts'], context['facts'])
+        expected = 'Pintunya kebuka didorong kucing.\n\nsource: @fixture_source'
+        self.assertEqual(self.provider.created[0]['description'], expected)
+        with self.store.connect() as db:
+            delivery = db.execute("SELECT id FROM deliveries WHERE state='scheduled'").fetchone()[0]
+            db.execute('INSERT INTO personas VALUES (?,?,?,?,?)', ('tone', 2, 'Fixture', 'Gaya berubah', STAMP))
+            db.execute('UPDATE account_personas SET persona_version=2')
+        self.provider.remote[0].update(status='success', url='https://www.tiktok.com/@fixture/video/123')
+        await self.worker.reconcile(delivery, config)
+        ai.draft.assert_awaited_once()
+        self.assertEqual(len(self.provider.created), 1)
+        with self.store.connect() as db:
+            payload = json.loads(db.execute('SELECT payload FROM attempts').fetchone()[0])
+            self.assertEqual(payload['description'], expected)
+            self.assertEqual(db.execute('SELECT hook FROM assets').fetchone()[0], hook)
+
+    async def test_bad_persona_copy_stays_held_until_explicit_safe_retry(self):
+        import httpx
+        from arker.adapters.ai import AI
+        config, version = await self.live()
+        config['ai']['enabled'] = True
+        version = self.store.save_configuration(config, version)
+        self.store.set_meta('applied_version', version)
+        await self.ready(version)
+        with self.store.connect() as db:
+            db.execute("UPDATE assets SET hook='Pintunya dibukain si kucing'")
+            db.execute("UPDATE deliveries SET state='shadow' WHERE platform!='tiktok'")
+            db.execute('INSERT INTO personas VALUES (?,?,?,?,?)', ('tone', 1, 'Fixture', 'Santai', STAMP))
+            db.execute('INSERT INTO account_personas VALUES (?,?,?)', ('account-tiktok', 'tone', 1))
+        calls = []
+        def response(request):
+            calls.append(request)
+            return httpx.Response(200, json={'choices': [{'message': {'content': json.dumps({'hook': 'Kamu nggak akan percaya!', 'caption': 'Tonton sampai habis!', 'facts': ['Kucing mendorong pintu.']})}}]})
+        self.worker.injected['ai'] = AI({'enabled': True, 'base_url': 'https://api.openai.com/v1', 'model': 'fixture'}, {}, transport=httpx.MockTransport(response))
+        await self.worker.deliver(config)
+        self.assertEqual(len(calls), 2)
+        self.worker.clock = lambda: STAMP + 61
+        self.worker.recover()
+        await self.worker.deliver(config)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(self.provider.created, [])
+        with self.store.connect() as db:
+            self.assertEqual(db.execute("SELECT state FROM deliveries WHERE platform='tiktok'").fetchone()[0], 'held')
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM attempts').fetchone()[0], 0)
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM reservations').fetchone()[0], 0)
+        await self.worker.command('retry_delivery_caption', {'delivery_id': 'fixture-tiktok'})
+        await self.worker.deliver(config)
+        self.assertEqual(len(calls), 4)
+        self.worker.intent('fixture-tiktok', 'schedule', 'schedule:fixture-tiktok', {'accountId': 'account-tiktok'})
+        with self.assertRaises(Held):
+            await self.worker.command('retry_delivery_caption', {'delivery_id': 'fixture-tiktok'})
 
     async def test_reports_missing_data_does_not_become_zero(self):
         config, _ = await self.live()

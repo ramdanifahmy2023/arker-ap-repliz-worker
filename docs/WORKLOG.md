@@ -39,3 +39,17 @@ Integrasi Git: commit/push branch dilakukan setelah PASS lokal; main hanya digab
 Review integrasi tambahan: CI awal pada commit `13d787d` lulus di tiga OS, termasuk browser Linux. Review menemukan readiness startup sebelum bind port, resolusi bank relatif, dan AI yang masih aktif pada restore. Perbaikan menambahkan handshake API siap, regresi port terpakai/URL stale, resolusi bank konsisten, penonaktifan AI/transkripsi saat restore, serta fixture path Unicode. Verifikasi diulang pada commit perbaikan sebelum main digabung.
 
 CI pull request awal menemukan race pada tes Windows: lock worker sudah aktif, tetapi konfigurasi awal belum selesai diterapkan ketika tes mengirim pause. Tes sekarang menunggu applied version dan acknowledgment perintah secara terpisah, dengan tenggat tiap tahap; assertion tetap memeriksa proses, konfigurasi, dan hasil pause. Petunjuk packaging juga menyebut prasyarat build secara eksplisit.
+
+## 20 Oktober 2026: hook tiga detik dan caption natural
+
+Permintaan: perbaiki hook visual dan caption generator yang terasa kaku. Lingkup diterapkan pada Arker baru, tanpa menggunakan credential, media, atau worker produksi lama. Base `12e2cb476b37e122bc56cc6fd32eed952858eb43`, branch `work/20261020-hook-caption-style`, worktree `.worktrees/20261020-hook-caption-style` dengan venv/runtime uji sendiri.
+
+Perubahan: `adapters/copywriting.py` dan `ai.py` memakai instruksi Indonesia santai berbasis detail video, hook sembilan kata/68 karakter tanpa emoji, caption singkat, guard pola pancingan, topik serius, format, dan satu perbaikan maksimal. Asal tulisan dan batas verifikasi dicatat pada context dan ditampilkan di detail web. AI mati memakai sumber secara jujur, tanpa klaim analisis baru. Caption persona menerima hook/fakta/caption asal. Kegagalan persona ditahan secara tersimpan dan hanya bisa dilanjutkan dengan tindakan operator sebelum intent pengiriman ada.
+
+Visual: `media.py` memakai `barlow-compact-v2`, teks lebih besar, susunan dua baris seimbang, backing transparan rapat, dan margin aman. Barlow dipertahankan untuk keterbacaan dan identitas. Tidak ada animasi masuk/karaoke agar tiga detik dipakai membaca. UI UX Pro Max dipakai untuk line balance dan kontras; antislop dipakai selama penulisan dan review. Render yang hash-nya cocok dipakai kembali saat salinan bank gagal, sehingga retry tidak mengganti gaya video yang sudah dibuat.
+
+Pemeriksaan: suite copy/layout/worker/API, format/build frontend, verifier publikasi, preview FFmpeg nyata dengan frame 0/89/90, serta tiga rasio video dan inspeksi contact sheet pada lebar tampilan 360 piksel. Batas frame, zoom, orientasi, codec, audio, kredit sumber, dan tidak adanya intent kirim diperiksa. Browser memeriksa penjelasan asal caption. Laporan lengkap dan hash akhir disimpan privat pada `.artifacts/`.
+
+Batas bukti: contoh caption ditulis sebagai fixture; tidak memanggil model AI eksternal. Pemeriksaan gaya/schema bukan verifikasi fakta atau jaminan semua keluaran model natural. Gaya baru berlaku pada draft/render baru, bukan rerender aset selesai atau perubahan payload jadwal lama. Tidak ada publikasi sosial, balasan, atau pesan Telegram nyata.
+
+Integrasi: PASS lokal, push branch, periksa CI pada SHA tepat, merge fast-forward ke main, push dan periksa CI main. Instalasi lokal hanya diperbarui dari wheel yang diperiksa, tetap shadow. Bukti disimpan sebelum worktree dan branch lokal dibersihkan tanpa force; status akhir integrasi/pembersihan dicatat pada manifest privat agar tidak menambah commit hanya untuk merekam hash sendiri.

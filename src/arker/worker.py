@@ -213,6 +213,15 @@ class Worker:
         if kind == 'reconcile_delivery':
             await self.reconcile(payload.get('delivery_id'), self.config())
             return {'checked': True}
+        if kind == 'retry_delivery_caption':
+            with self.store.connect() as db:
+                db.execute('BEGIN IMMEDIATE')
+                delivery = db.execute('SELECT state,remote_id FROM deliveries WHERE id=?', (payload.get('delivery_id'),)).fetchone()
+                attempted = db.execute('SELECT 1 FROM attempts WHERE delivery_id=? LIMIT 1', (payload.get('delivery_id'),)).fetchone()
+                if not delivery or delivery['state'] != 'held' or delivery['remote_id'] or attempted:
+                    raise Held('retry_unsafe', 'Caption hanya boleh diulang sebelum ada intent atau hasil pengiriman.')
+                db.execute("UPDATE deliveries SET state='pending',error=NULL,updated_at=? WHERE id=?", (self.clock(), payload['delivery_id']))
+            return {'queued': True, 'publication_requires_live_gates': True}
         if kind == 'retry_asset':
             with self.store.connect() as db:
                 asset = db.execute('SELECT * FROM assets WHERE id=?', (payload.get('asset_id'),)).fetchone()
@@ -300,18 +309,27 @@ class Worker:
             elif stage == 'draft':
                 result = await self.adapter('ai', config).draft(context, context.get('frames', []))
                 context.update({'facts': result.get('facts', []), 'ai_used': result.get('ai_used', False), 'usage': result.get('usage', {})})
+                context.update({key: result[key] for key in ('copy_version', 'copy_origin', 'copy_diagnostics') if key in result})
                 caption = self.attribution(result['caption'], asset['source_username'])
                 self.asset_update(asset['id'], stage='render', state='processing', hook=result['hook'], caption=caption, context=json.dumps(context), error=None)
             elif stage == 'render':
-                source = self.get_artifact(asset['id'], 'source')
                 last_progress = [0.0]
                 def render_progress(completed, total):
                     current = time.monotonic()
                     if current - last_progress[0] >= .5 or completed >= total:
                         self.asset_update(asset['id'], progress=completed, total=total)
                         last_progress[0] = current
-                result = await self.adapter('media', config).render(source['path'], work / 'rendered.mp4', asset['hook'], on_progress=render_progress)
-                self.artifact(asset['id'], 'render', result['path'])
+                with self.store.connect() as db:
+                    already_rendered = db.execute("SELECT 1 FROM artifacts WHERE asset_id=? AND kind='render'", (asset['id'],)).fetchone()
+                if already_rendered:
+                    result = self.get_artifact(asset['id'], 'render')
+                else:
+                    source = self.get_artifact(asset['id'], 'source')
+                    result = await self.adapter('media', config).render(source['path'], work / 'rendered.mp4', asset['hook'], on_progress=render_progress)
+                    if result.get('layout'):
+                        context['hook_layout'] = result['layout']
+                        self.asset_update(asset['id'], context=json.dumps(context))
+                    self.artifact(asset['id'], 'render', result['path'])
                 bank = Path(config['storage']['bank_directory']).expanduser()
                 if not bank.is_absolute():
                     bank = self.store.data_dir / bank
@@ -427,7 +445,7 @@ class Worker:
             return
         config_version = self.store.get_meta('applied_version', 0)
         with self.store.connect() as db:
-            row = db.execute("SELECT d.*,a.config_version,a.caption,a.source_username,a.source_verified FROM deliveries d JOIN assets a ON d.asset_id=a.id WHERE d.state='pending' AND a.state='ready' AND (d.error IS NULL OR d.updated_at<?) ORDER BY d.created_at LIMIT 1", (self.clock() - 30,)).fetchone()
+            row = db.execute("SELECT d.*,a.config_version,a.hook,a.caption,a.source_username,a.source_verified FROM deliveries d JOIN assets a ON d.asset_id=a.id WHERE d.state='pending' AND a.state='ready' AND (d.error IS NULL OR d.updated_at<?) ORDER BY d.created_at LIMIT 1", (self.clock() - 30,)).fetchone()
         if not row:
             return
         delivery = dict(row)
@@ -454,7 +472,11 @@ class Worker:
             if persona and asset_config.get('ai', {}).get('enabled'):
                 with self.store.connect() as db:
                     context = json.loads(db.execute('SELECT context FROM assets WHERE id=?', (delivery['asset_id'],)).fetchone()[0])
-                draft = await self.adapter('ai', asset_config).draft(context, context.get('frames', []), persona['style'])
+                context.update(rendered_hook=delivery['hook'], base_caption=caption)
+                try:
+                    draft = await self.adapter('ai', asset_config).draft(context, context.get('frames', []), persona['style'])
+                except AdapterError as exc:
+                    raise Held('caption_review', 'Caption akun belum siap. Periksa pengaturan AI dan konteks, lalu pilih ulangi caption untuk melanjutkan.') from exc
                 caption = draft['caption']
                 self.store.event('delivery.persona', delivery['id'], {'persona_id': persona['id'], 'version': persona['version']})
             payload = {'title': (caption or '').splitlines()[0][:90], 'description': self.attribution(caption, delivery['source_username']), 'type': 'reel' if delivery['platform'] == 'facebook' else 'video', 'medias': [{'type': 'video', 'url': bank['drive_url']}], 'accountId': account['id'], 'scheduleAt': iso(scheduled)}
@@ -485,6 +507,9 @@ class Worker:
         except Held as exc:
             with self.store.connect() as db:
                 db.execute('UPDATE deliveries SET error=?,updated_at=? WHERE id=?', (str(exc), self.clock(), delivery['id']))
+                if exc.code == 'caption_review':
+                    db.execute("UPDATE deliveries SET state='held' WHERE id=?", (delivery['id'],))
+                    db.execute("DELETE FROM reservations WHERE delivery_id=? AND state='reserved'", (delivery['id'],))
             self.store.event('delivery.held', delivery['id'], {'code': exc.code, 'message': str(exc)})
 
     def reserve(self, delivery, day, config):

@@ -85,6 +85,8 @@ flowchart LR
 
 Worker mempertahankan orientasi sumber, zoom 110%, tanpa mirror, hook sebelum detik 3, H.264/AAC, serta audio sumber. Caption publik selalu menyertakan `source: @username` berdasarkan metadata pemilik. Maksimal 20 video per akun per hari Asia/Jakarta; kuota balasan dihitung terpisah.
 
+[Gaya hook dan caption](docs/HOOK_AND_CAPTION.md): teks singkat, Barlow yang lebih besar, susunan dua baris, dan caption santai yang mengikuti kejadian dalam video. Asal tulisan ditampilkan pada detail konten; AI yang belum aktif tidak diklaim sudah menyusun ulang caption.
+
 Jadwal yang baru diterima tidak dihitung sebagai tayang. Hasil yang tidak pasti ditahan, lalu diperiksa melalui bukti provider. Mode shadow berhenti pada preview dan tidak membutuhkan akun provider untuk uji media lokal.
 
 ## Konfigurasi yang bisa diperiksa

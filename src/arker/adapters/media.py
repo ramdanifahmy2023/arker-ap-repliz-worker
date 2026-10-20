@@ -153,41 +153,102 @@ class Media:
 
     @staticmethod
     def overlay(hook, width, height, path):
+        from functools import lru_cache
         from PIL import Image, ImageDraw, ImageFont
+
         font_path = Path(__file__).resolve().parents[1] / 'assets' / 'fonts' / 'BarlowSemiCondensed-Bold.ttf'
         if not font_path.is_file():
             raise Held('font_missing', 'Font hook belum tersedia.')
         hook = ' '.join(str(hook).split())
         if not hook or len(hook) > 160:
             raise Held('hook_invalid', 'Hook harus berisi 1 sampai 160 karakter.')
+        if width < 160 or height < 120:
+            raise Held('hook_dimensions', 'Resolusi video terlalu kecil untuk hook yang terbaca.')
         canvas = Image.new('RGBA', (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(canvas)
-        maximum_width = width * 0.82
-        for size in range(max(18, int(width * 0.059)), max(12, int(width * 0.027)) - 1, -1):
-            font = ImageFont.truetype(str(font_path), size)
-            lines, current = [], ''
-            for word in hook.split():
-                candidate = f'{current} {word}'.strip()
-                if draw.textlength(candidate, font=font) > maximum_width and current:
-                    lines.append(current)
-                    current = word
-                else:
-                    current = candidate
-            lines.append(current)
-            if len(lines) <= 3 and all(draw.textlength(line, font=font) <= maximum_width for line in lines):
+        words = hook.split()
+        target_size = round(min(width * .084, height * .106))
+        normal_minimum = max(12, round(target_size * .73))
+        legacy_minimum = max(12, round(min(width * .045, height * .06)))
+        safe_inset = max(8, round(width * .07))
+
+        def balanced_lines(font, stroke, maximum_width, line_limit):
+            @lru_cache(maxsize=None)
+            def measured(start, end):
+                text = ' '.join(words[start:end])
+                bounds = draw.textbbox((0, 0), text, font=font, anchor='ms', stroke_width=stroke)
+                return text, bounds[2] - bounds[0]
+
+            def partitions(start, remaining):
+                if remaining == 1:
+                    text, measured_width = measured(start, len(words))
+                    if measured_width <= maximum_width:
+                        yield [(text, measured_width)]
+                    return
+                for end in range(start + 1, len(words) - remaining + 2):
+                    text, measured_width = measured(start, end)
+                    if measured_width > maximum_width:
+                        break
+                    for rest in partitions(end, remaining - 1):
+                        yield [(text, measured_width), *rest]
+
+            for count in range(1, min(line_limit, len(words)) + 1):
+                best, best_score = None, float('inf')
+                for candidate in partitions(0, count):
+                    widths = [item[1] for item in candidate]
+                    score = (max(widths) - min(widths)) ** 2
+                    if len(words) >= count * 3:
+                        score += sum(maximum_width ** 2 for text, _ in candidate if ' ' not in text)
+                    if score < best_score:
+                        best, best_score = [item[0] for item in candidate], score
+                if best:
+                    return best
+            return None
+
+        # New hooks stay large and within two lines; older text may use a bounded third line.
+        passes = [(2, normal_minimum)]
+        if len(hook) > 68:
+            passes.append((3, legacy_minimum))
+        lines = None
+        for line_limit, minimum in passes:
+            for size in range(target_size, minimum - 1, -1):
+                font = ImageFont.truetype(str(font_path), size)
+                stroke = max(1, round(size * .025))
+                padding_x = max(4, round(size * .30))
+                maximum_width = width - 2 * (safe_inset + padding_x)
+                lines = balanced_lines(font, stroke, maximum_width, line_limit)
+                if lines:
+                    break
+            if lines:
                 break
-        else:
-            raise Held('hook_too_wide', 'Hook terlalu panjang untuk video ini; pendekkan kalimatnya.')
-        spacing, padding = int(size * .25), int(size * .40)
-        line_height = size + spacing
-        top = int(height * .18)
-        actual_width = int(max(draw.textlength(line, font=font) for line in lines))
-        left = (width - actual_width) // 2
-        draw.rounded_rectangle((left - padding, top - padding, left + actual_width + padding, top + line_height * len(lines) + padding), radius=max(5, padding), fill=(13, 20, 24, 230))
-        for index, line in enumerate(lines):
-            draw.text((width / 2, top + index * line_height), line, font=font, fill='white', anchor='mt', stroke_width=1, stroke_fill=(13, 20, 24, 255))
+        if not lines:
+            raise Held('hook_too_wide', 'Hook terlalu panjang untuk tetap terbaca. Pendekkan kalimat atau kata yang panjang.')
+
+        bounds = [draw.textbbox((0, 0), line, font=font, anchor='ms', stroke_width=stroke) for line in lines]
+        glyph_top = min(box[1] for box in bounds)
+        glyph_bottom = max(box[3] for box in bounds)
+        gap = max(3, round(size * .20))
+        line_height = glyph_bottom - glyph_top + gap
+        text_top = round(height * .16)
+        padding_y = max(3, round(size * .22))
+        positions = [(width // 2, text_top - glyph_top + index * line_height) for index in range(len(lines))]
+        text_bounds = [list(draw.textbbox(position, line, font=font, anchor='ms', stroke_width=stroke)) for position, line in zip(positions, lines)]
+        backing_bounds = [
+            min(box[0] for box in text_bounds) - padding_x,
+            min(box[1] for box in text_bounds) - padding_y,
+            max(box[2] for box in text_bounds) + padding_x,
+            max(box[3] for box in text_bounds) + padding_y,
+        ]
+        draw.rounded_rectangle(backing_bounds, radius=max(2, round(size * .12)), fill=(16, 20, 24, 194))
+        for position, line in zip(positions, lines):
+            draw.text(position, line, font=font, fill='white', anchor='ms', stroke_width=stroke, stroke_fill=(12, 16, 20, 255))
         canvas.save(path)
-        return {'lines': lines, 'font_size': size, 'max_width': maximum_width}
+        return {
+            'style_id': 'barlow-compact-v2', 'lines': lines, 'line_count': len(lines),
+            'font_size': size, 'max_width': maximum_width, 'text_bounds': text_bounds,
+            'backing_bounds': backing_bounds, 'safe_inset': safe_inset,
+            'legacy_fallback': line_limit == 3,
+        }
 
     async def render(self, source, destination, hook, *, on_progress=None):
         info = await self.probe(source)

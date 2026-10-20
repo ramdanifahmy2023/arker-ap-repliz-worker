@@ -37,7 +37,7 @@ def seed_fixture(data_dir: Path):
             identifier=f'browser-fixture-{i:04d}'
             stage=['download','inspect','draft','render','drive','delivery'][i%6]
             state='preview_ready' if i%4==0 else 'published' if i%4==1 else 'held'
-            context=json.dumps({'fixture':True,'facts':['Video buatan untuk pemeriksaan antarmuka.']})
+            context=json.dumps({'fixture':True,'facts':['Video buatan untuk pemeriksaan antarmuka.'],'copy_origin':'source_excerpt','copy_version':'natural-id-v1'})
             db.execute('INSERT INTO assets(id,batch_id,source_url,source_username,source_verified,state,stage,progress,total,config_version,context,hook,caption,error,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(identifier,'browser-fixture-batch',f'https://www.instagram.com/reel/ARKERFIXTURE{i:04d}/','fixture_source',1,state,stage,32+i%60 if i%6==3 else None,100 if i%6==3 else None,1,context,f'Konten fixture {i+1:04d}','Caption fixture untuk pengujian tampilan.','Fixture ditahan; tidak boleh dikirim.' if state=='held' else None,stamp-(i%7)*86400-(i%20)*60,stamp-(i%30)*60))
             for platform in ('tiktok','facebook','youtube'):
                 dstate='published' if state=='published' else 'shadow'
@@ -159,6 +159,8 @@ def main():
             assert page.locator('video').evaluate('(video)=>video.videoWidth')>0
             screenshot('detail-fixture-preview.png');audit('detail-preview')
             result['checks'].append('authenticated_real_media_preview')
+            expect(page.get_by_text('Tulisan diambil dari keterangan sumber. AI belum menyusun ulang caption.')).to_be_visible()
+            result['checks'].append('source_copy_not_presented_as_ai_rewrite')
         page.goto(args.base_url+'/#overview');settle();screenshot('overview-fixture-light.png');audit('overview-light')
         page.get_by_role('button',name='Gunakan tema gelap').click();screenshot('overview-fixture-dark.png');audit('overview-dark')
         page.get_by_role('button',name='Kurangi animasi').click()

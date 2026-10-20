@@ -997,6 +997,15 @@ export function AssetDetail({
             </div>
           </Panel>
           <Panel title="Metadata & konteks">
+            {asset.context?.copy_origin && (
+              <p className="muted">
+                {asset.context.copy_origin === "ai"
+                  ? "Hook dan caption disusun AI. Periksa kembali kecocokannya dengan video."
+                  : asset.context.copy_origin === "source_excerpt"
+                    ? "Tulisan diambil dari keterangan sumber. AI belum menyusun ulang caption."
+                    : "Hook memakai teks netral karena keterangan sumber belum cukup singkat. AI belum menyusun ulang caption."}
+              </p>
+            )}
             <dl className="facts vertical">
               <div>
                 <dt>Hook</dt>

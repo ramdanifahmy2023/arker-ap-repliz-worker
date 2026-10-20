@@ -76,7 +76,7 @@ Adapter menggunakan bentuk Chat Completions untuk [OpenAI](https://developers.op
 
 Ketika AI aktif, konteks berisi caption sumber, enam frame, dan transkrip jika tersedia. Respons divalidasi sebagai fakta, hook, dan caption dengan batas panjang. Username kredit ditambahkan aplikasi setelah hasil AI diperiksa. Persona akun dapat memengaruhi caption per delivery serta reply, tanpa merender ulang video bersama. Binding menyimpan ID dan versi persona.
 
-Ketika AI nonaktif, preview memakai caption sumber serta hook pertanyaan netral. Tidak ada klaim bahwa analisis visual AI atau transkripsi sudah terjadi. Reply kontekstual membutuhkan AI yang aktif, kuota terpisah, ownership, konteks posting, dan percakapan sebelumnya.
+Ketika AI nonaktif, preview memakai caption sumber serta potongan kalimat sumber yang pendek atau hook netral. Sumber kosong/tidak layak ditahan untuk pemeriksaan. Tidak ada klaim bahwa analisis visual AI atau transkripsi sudah terjadi. [Aturan tulisan dan visual](../HOOK_AND_CAPTION.md) menjelaskan asal draft, satu perbaikan terbatas, dan batas bukti kualitas. Reply kontekstual membutuhkan AI yang aktif, kuota terpisah, ownership, konteks posting, dan percakapan sebelumnya.
 
 ## Telegram
 
